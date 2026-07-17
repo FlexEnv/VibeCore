@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "fetch-swagger": "tsx scripts/fetch-swagger.ts",
-    "generate-client": "orval",
+    "generate-client": "orval --config orval.config.ts",
     "update-api": "npm run fetch-swagger && npm run generate-client",
     "watch-api": "npm run update-api && chokidar '../Areas/Api/**' '../Areas/Api/Models/**' '../Models/**' '../Program.cs' -c 'npm run update-api'"
   },
