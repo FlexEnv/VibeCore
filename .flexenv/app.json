@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "runtimeProfile": "vibecore-dotnet",
+  "installCommand": "/app/bootstrap-vibecore.sh",
+  "previewCommand": "./scripts/flex-preview.sh",
+  "previewPort": 3000,
+  "healthPath": "/health/live",
+  "environment": {
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "Database__Provider": "Sqlite",
+    "ConnectionStrings__DefaultConnection": "Data Source=/workspace/.flexenv/preview.db;Cache=Shared",
+    "DataProtection__PersistKeysToDatabase": "false",
+    "FlexSso__Enabled": "true"
+  }
+}

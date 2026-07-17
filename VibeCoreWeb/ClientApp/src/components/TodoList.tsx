@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetApiTodos,
-  getGetApiTodosQueryKey,
   usePostApiTodos,
   usePutApiTodosId,
   useDeleteApiTodosId,
@@ -14,7 +13,7 @@ export default function TodoList() {
   const queryClient = useQueryClient();
 
   const invalidateTodos = () =>
-    queryClient.invalidateQueries({ queryKey: getGetApiTodosQueryKey() });
+    queryClient.invalidateQueries({ queryKey: ["/api/Todos"] });
 
   const { data: todos = [], isLoading, error } = useGetApiTodos({
     query: { refetchInterval: 5000 },

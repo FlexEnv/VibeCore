@@ -2,21 +2,34 @@
 
 A modern full-stack web application template combining ASP.NET Core with React and Vite. This template provides authentication, API development with automatic TypeScript client generation, and a responsive frontend with Tailwind CSS.
 
+## Flex previews
+
+The repository contains a preview contract at `.flexenv/app.json`. Flex runs
+the application with `scripts/flex-preview.sh`, exposing ASP.NET Core on port
+3000 while Vite remains an internal development server with HMR.
+
+When `FlexSso__Enabled=true`, unauthenticated users are redirected to the
+configured `FlexSso__Authority` (normally `https://flexenv.com`). The preview
+uses an authorization-code flow with S256 PKCE and creates a secure session
+cookie scoped to its own `flexenv.ai` hostname. Local ASP.NET Core Identity
+remains available when Flex SSO is disabled.
+
 ## 🏗️ Project Architecture
 
 This is a monorepo structure combining:
 
 - **Backend**: ASP.NET Core 10.0 with Razor Pages and API Controllers
 - **Frontend**: React 18 + Vite with TypeScript
-- **Database**: Entity Framework Core with SQLite
-- **Authentication**: ASP.NET Core Identity
+- **Database**: Entity Framework Core with PostgreSQL in production and SQLite for local development
+- **Authentication**: ASP.NET Core Identity with username/password accounts
 - **API Documentation**: Swagger/OpenAPI with automatic client generation
 
 ## ✨ Features
 
 - ✅ Full-stack development with hot reload for both backend and frontend
 - ✅ ASP.NET Core Identity for user authentication
-- ✅ Entity Framework Core with SQLite database
+- ✅ PostgreSQL production persistence with a lightweight SQLite development option
+- ✅ Policy-based authorization foundations
 - ✅ Swagger/OpenAPI integration with UI
 - ✅ Automatic TypeScript API client generation from OpenAPI spec
 - ✅ Tailwind CSS for styling
@@ -29,7 +42,7 @@ This is a monorepo structure combining:
 ### Prerequisites
 
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download)
-- [Node.js](https://nodejs.org/) v18 or higher
+- [Node.js](https://nodejs.org/) v22.18 or higher
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 ### Initial Setup
@@ -50,10 +63,10 @@ This is a monorepo structure combining:
    ```
 
 3. **Set up the database**:
-   ```bash
-   cd VibeCore
-   dotnet ef database update
-   ```
+
+   The Development profile creates its local SQLite database automatically.
+   PostgreSQL deployments use the committed migrations described in
+   [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ### Development
 
@@ -95,7 +108,8 @@ dotnet watch run
 
 ## 💾 Database & Migrations
 
-This project uses Entity Framework Core with SQLite. Here's how to work with the database:
+This project uses PostgreSQL migrations in production and SQLite for lightweight
+local development. Here's how to work with the database:
 
 ### Creating Migrations
 
@@ -112,9 +126,11 @@ Example:
 dotnet ef migrations add AddUserProfileFields
 ```
 
-### Applying Migrations
+### Applying PostgreSQL Migrations
 
-To apply pending migrations to your database:
+Set the Production environment and PostgreSQL connection string before applying
+pending migrations. Development SQLite databases are created automatically and
+are not a migration target.
 
 ```bash
 dotnet ef database update
@@ -278,7 +294,10 @@ Edit `VibeCore/appsettings.json` or `appsettings.Development.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "DataSource=app.db;Cache=Shared"
+    "DefaultConnection": ""
+  },
+  "Database": {
+    "Provider": "PostgreSql"
   },
   "Logging": {
     "LogLevel": {
@@ -298,92 +317,14 @@ Modify ports and other launch settings in `VibeCore/Properties/launchSettings.js
 
 ## 🔐 Authentication & Email
 
-### Development
+This project uses ASP.NET Core Identity with local username/password accounts.
+The starter configuration does not require email confirmation, allowing a new
+installation to work without an email provider.
 
-This project uses **ASP.NET Core Identity** for authentication, which is handled automatically by the framework. In development, email confirmations are typically skipped or logged to console.
-
-### Production
-
-For production, you **must configure an email provider** to send confirmation emails and password reset links. The recommended approach is to use **[Resend](https://resend.com/)**, a modern email API for developers.
-
-#### Setting Up Resend
-
-1. **Create a Resend account** at https://resend.com and get your API key
-
-2. **Install the Resend NuGet package**:
-
-   ```bash
-   dotnet add package Resend
-   ```
-
-3. **Add to appsettings.json**:
-
-   ```json
-   {
-     "Email": {
-       "Provider": "Resend",
-       "FromAddress": "noreply@yourdomain.com",
-       "ApiKey": "re_YOUR_API_KEY_HERE"
-     }
-   }
-   ```
-
-4. **Create an email service** in your project:
-
-   ```csharp
-   public interface IEmailService
-   {
-       Task SendEmailAsync(string to, string subject, string body);
-   }
-
-   public class ResendEmailService : IEmailService
-   {
-       private readonly IConfiguration _config;
-       private readonly ResendClient _client;
-
-       public ResendEmailService(IConfiguration config)
-       {
-           _config = config;
-           var apiKey = config["Email:ApiKey"];
-           _client = new ResendClient(apiKey);
-       }
-
-       public async Task SendEmailAsync(string to, string subject, string body)
-       {
-           var message = new EmailMessage
-           {
-               From = _config["Email:FromAddress"],
-               To = new[] { to },
-               Subject = subject,
-               HtmlBody = body
-           };
-
-           await _client.EmailSendAsync(message);
-       }
-   }
-   ```
-
-5. **Register in Program.cs**:
-
-   ```csharp
-   builder.Services.AddScoped<IEmailService, ResendEmailService>();
-   ```
-
-6. **Use in Identity configuration** (in Program.cs):
-   ```csharp
-   builder.Services.Configure<IdentityOptions>(options =>
-   {
-       options.SignIn.RequireConfirmedEmail = true;
-   });
-   ```
-
-### User Registration & Email Confirmation
-
-The default Identity scaffolding handles registration. Users will receive confirmation emails that they must verify before logging in. Make sure to:
-
-- Configure the email confirmation link to point to your production domain
-- Store the email provider credentials securely (use Azure Key Vault, AWS Secrets Manager, or environment variables)
-- Never commit API keys to version control
+Before enabling public self-registration, implement `IEmailSender`, set
+`options.SignIn.RequireConfirmedAccount` to `true`, and keep provider
+credentials in a secret manager. An email sender is also needed for password
+reset messages.
 
 ## 🏭 Production Build
 
@@ -439,6 +380,7 @@ npm test
 - [API Setup Guide](API-SETUP.md) - Detailed API configuration and examples
 - [React Integration Guide](VibeCore/README-React.md) - React + Vite integration details
 - [Template Guide](TEMPLATE-README.md) - Using this as a dotnet template
+- [Production Deployment](DEPLOYMENT.md) - PostgreSQL, Identity, migrations, and container deployment
 
 ## 🛠️ Tech Stack
 
@@ -448,7 +390,7 @@ npm test
 - Entity Framework Core
 - ASP.NET Core Identity
 - Swashbuckle (Swagger/OpenAPI)
-- SQLite
+- PostgreSQL (production) and SQLite (development)
 
 ### Frontend
 
@@ -481,7 +423,7 @@ This is a hybrid ASP.NET Core + React application with the following key charact
 
 - **Backend**: ASP.NET Core with Razor Pages (traditional pages) + API Controllers (RESTful API)
 - **Frontend**: React SPA served under `/app` route, coexisting with Razor Pages
-- **Database**: Entity Framework Core with Code-First approach using SQLite
+- **Database**: Entity Framework Core with PostgreSQL in production and SQLite in development
 
 ### Development Workflow
 

@@ -7,7 +7,7 @@ This is a dotnet template for creating a full-stack ASP.NET Core application wit
 - ASP.NET Core 10.0 backend
 - React 18 frontend with Vite
 - ASP.NET Core Identity for authentication
-- Entity Framework Core with SQLite
+- Entity Framework Core with PostgreSQL in production and SQLite in development
 - Swagger/OpenAPI integration
 - Auto-generated API clients from OpenAPI spec
 - Tailwind CSS support

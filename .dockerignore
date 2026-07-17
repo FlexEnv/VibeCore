@@ -1,0 +1,12 @@
+.git
+.agents
+.codex
+.vs
+.vscode
+**/bin
+**/obj
+**/node_modules
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/wwwroot/app

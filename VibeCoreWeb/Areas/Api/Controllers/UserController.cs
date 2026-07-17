@@ -17,7 +17,6 @@ public class UserController : ControllerBase
         _userManager = userManager;
     }
 
-    // GET: api/User/current
     [HttpGet("current")]
     public async Task<ActionResult<UserInfoDto>> GetCurrentUser()
     {

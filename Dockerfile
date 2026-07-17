@@ -1,31 +1,35 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+FROM node:22-bookworm-slim AS client-build
+WORKDIR /src/VibeCoreWeb/ClientApp
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+COPY VibeCoreWeb/ClientApp/package.json VibeCoreWeb/ClientApp/package-lock.json ./
+RUN npm ci
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-RUN apt-get update
-RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
-RUN apt-get install -y nodejs
-
-WORKDIR /src
-COPY ["VibeCore/VibeCore.csproj", "VibeCore/"]
-RUN dotnet restore "VibeCore/VibeCore.csproj"
-COPY . .
-
-WORKDIR /src/VibeCore/VibeCore
-RUN dotnet build "VibeCore.csproj" -c Release -o /app/build
-WORKDIR /src/VibeCore/ClientApp
-RUN npm install
+COPY VibeCoreWeb/ClientApp/ ./
+RUN npm run generate-client
 RUN npm run build
 
-FROM build AS publish
-WORKDIR /src/VibeCore
-RUN dotnet publish "VibeCore.csproj" -c Release -o /app/publish /p:UseAppHost=false
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS server-build
+WORKDIR /src
 
-FROM base AS final
+COPY VibeCoreWeb/VibeCoreWeb.csproj VibeCoreWeb/
+RUN dotnet restore VibeCoreWeb/VibeCoreWeb.csproj
+
+COPY . .
+COPY --from=client-build /src/VibeCoreWeb/wwwroot/app/ VibeCoreWeb/wwwroot/app/
+RUN dotnet publish VibeCoreWeb/VibeCoreWeb.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore \
+    /p:UseAppHost=false \
+    /p:BuildClientApp=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "VibeCore.dll"]
+
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+
+COPY --from=server-build /app/publish .
+
+USER $APP_UID
+ENTRYPOINT ["dotnet", "VibeCoreWeb.dll"]

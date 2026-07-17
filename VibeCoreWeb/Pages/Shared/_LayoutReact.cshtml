@@ -1,11 +1,16 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Vite.AspNetCore
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var antiforgeryToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="@antiforgeryToken" />
     <base href="/app/" />
     <title>@ViewData["Title"] - React App</title>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -32,7 +37,7 @@
         @RenderBody()
     </main>
 
-    <script type="module" vite-src="~/src/main.jsx"></script>
+    <script type="module" vite-src="~/src/main.tsx"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

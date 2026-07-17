@@ -3,16 +3,23 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => {
+  const previewUrl = process.env.PREVIEW_URL
+    ? new URL(process.env.PREVIEW_URL)
+    : undefined;
+
+  return {
   appType: "custom",
   plugins: [tailwindcss(), react()],
   server: {
     port: 5173,
     strictPort: true,
     hmr: {
-      protocol: "ws",
-      host: "localhost",
+      protocol: previewUrl?.protocol === "https:" ? "wss" : "ws",
+      host: previewUrl?.hostname ?? "localhost",
+      clientPort: previewUrl?.protocol === "https:" ? 443 : undefined,
     },
+    allowedHosts: [".flexenv.ai"],
   },
   base: "/app/",
   build: {
@@ -23,4 +30,5 @@ export default defineConfig(({ mode }) => ({
       input: ["./src/main.tsx", "./tailwind.config.css"],
     },
   },
-}));
+  };
+});
