@@ -277,6 +277,10 @@ if (app.Environment.IsDevelopment() || isPreviewMode)
                     context.Response.ContentType =
                         response.Content.Headers.ContentType.ToString();
                 }
+                context.Response.Headers.CacheControl =
+                    "no-store, no-cache, must-revalidate";
+                context.Response.Headers.Pragma = "no-cache";
+                context.Response.Headers.Expires = "0";
                 await response.Content.CopyToAsync(
                     context.Response.Body,
                     context.RequestAborted);

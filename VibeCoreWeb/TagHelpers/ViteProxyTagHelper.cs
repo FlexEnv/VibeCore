@@ -13,6 +13,10 @@ public sealed class ViteProxyTagHelper(
     IViteDevServerStatus viteStatus,
     IViteManifest manifest) : TagHelper
 {
+    private static readonly string DevelopmentCacheKey =
+        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(
+            System.Globalization.CultureInfo.InvariantCulture);
+
     [HtmlAttributeName("vite-src")]
     public string? ViteSrc { get; set; }
 
@@ -28,14 +32,16 @@ public sealed class ViteProxyTagHelper(
         var normalizedPath = path.TrimStart('~', '/');
         if (viteStatus.IsMiddlewareEnable)
         {
+            var developmentUrl =
+                $"/app/{normalizedPath}?v={DevelopmentCacheKey}";
             if (ViteSrc is not null)
             {
                 output.Attributes.RemoveAll("vite-src");
-                output.Attributes.SetAttribute("src", $"/app/{normalizedPath}");
+                output.Attributes.SetAttribute("src", developmentUrl);
                 output.PreElement.AppendHtml(
-                    "<script type=\"module\" src=\"/app/@vite/client\"></script>\n" +
+                    $"<script type=\"module\" src=\"/app/@vite/client?v={DevelopmentCacheKey}\"></script>\n" +
                     "<script type=\"module\">\n" +
-                    "  import RefreshRuntime from '/app/@react-refresh';\n" +
+                    $"  import RefreshRuntime from '/app/@react-refresh?v={DevelopmentCacheKey}';\n" +
                     "  RefreshRuntime.injectIntoGlobalHook(window);\n" +
                     "  window.$RefreshReg$ = () => {};\n" +
                     "  window.$RefreshSig$ = () => (type) => type;\n" +
@@ -45,7 +51,7 @@ public sealed class ViteProxyTagHelper(
             else
             {
                 output.Attributes.RemoveAll("vite-href");
-                output.Attributes.SetAttribute("href", $"/app/{normalizedPath}");
+                output.Attributes.SetAttribute("href", developmentUrl);
             }
 
             return;
