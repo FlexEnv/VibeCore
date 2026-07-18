@@ -259,8 +259,17 @@ if (app.Environment.IsDevelopment() || isPreviewMode)
                 $"http://localhost:{viteServerPort}{path}{context.Request.QueryString}";
             try
             {
-                using var response = await httpClient.GetAsync(
-                    viteUrl,
+                using var viteRequest = new HttpRequestMessage(HttpMethod.Get, viteUrl);
+                if (context.Request.Headers.TryGetValue("Accept", out var accept))
+                {
+                    viteRequest.Headers.TryAddWithoutValidation(
+                        "Accept",
+                        accept.ToArray());
+                }
+
+                using var response = await httpClient.SendAsync(
+                    viteRequest,
+                    HttpCompletionOption.ResponseHeadersRead,
                     context.RequestAborted);
                 context.Response.StatusCode = (int)response.StatusCode;
                 if (response.Content.Headers.ContentType is not null)
