@@ -136,12 +136,30 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "VibeCore API", Version = "v1" });
 });
 
+var viteServerPort = int.TryParse(
+    Environment.GetEnvironmentVariable("VITE_PORT"),
+    out var parsedVitePort)
+    ? parsedVitePort
+    : 5173;
+var viteServerHost = Environment.GetEnvironmentVariable("VITE_SERVER_HOST");
+if (string.IsNullOrWhiteSpace(viteServerHost))
+{
+    var previewUrl = Environment.GetEnvironmentVariable("PREVIEW_URL");
+    if (!string.IsNullOrWhiteSpace(previewUrl) &&
+        Uri.TryCreate(previewUrl, UriKind.Absolute, out var previewUri))
+    {
+        viteServerHost = previewUri.Host;
+    }
+}
+viteServerHost ??= "localhost";
+
 builder.Services.AddViteServices(options =>
 {
     options.Base = "/app/";
     options.Manifest = ".vite/manifest.json";
     options.Server.AutoRun = false;
-    options.Server.Port = 5173;
+    options.Server.Host = viteServerHost;
+    options.Server.Port = (ushort)viteServerPort;
     options.Server.UseReactRefresh = true;
     options.Server.PackageDirectory = "ClientApp";
     options.Server.PackageManager = "npm";
@@ -174,6 +192,97 @@ else
 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
+app.UseWebSockets();
+
+// Keep Vite on an internal port and proxy its assets/HMR through ASP.NET's
+// single public port, matching the proven FlexEnv sqlite preview setup.
+var isPreviewMode =
+    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PREVIEW_URL"));
+if (app.Environment.IsDevelopment() || isPreviewMode)
+{
+    app.Use(async (context, next) =>
+    {
+        var path = context.Request.Path.Value ?? "";
+
+        if (context.WebSockets.IsWebSocketRequest && path == "/app/__vite_hmr")
+        {
+            try
+            {
+                using var viteSocket = new System.Net.WebSockets.ClientWebSocket();
+                viteSocket.Options.AddSubProtocol("vite-hmr");
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                await viteSocket.ConnectAsync(
+                    new Uri($"ws://localhost:{viteServerPort}{path}"),
+                    timeout.Token);
+
+                using var browserSocket =
+                    await context.WebSockets.AcceptWebSocketAsync("vite-hmr");
+                await Task.WhenAny(
+                    RelayWebSocket(viteSocket, browserSocket),
+                    RelayWebSocket(browserSocket, viteSocket));
+
+                if (viteSocket.State == System.Net.WebSockets.WebSocketState.Open)
+                {
+                    await viteSocket.CloseAsync(
+                        System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
+                        "Done",
+                        CancellationToken.None);
+                }
+                if (browserSocket.State == System.Net.WebSockets.WebSocketState.Open)
+                {
+                    await browserSocket.CloseAsync(
+                        System.Net.WebSockets.WebSocketCloseStatus.NormalClosure,
+                        "Done",
+                        CancellationToken.None);
+                }
+                return;
+            }
+            catch (Exception ex) when (
+                ex is OperationCanceledException or
+                System.Net.WebSockets.WebSocketException or
+                HttpRequestException)
+            {
+                app.Logger.LogWarning(ex, "Could not proxy the Vite HMR connection");
+            }
+        }
+
+        var shouldProxy = path.StartsWith("/app/", StringComparison.Ordinal) &&
+            (Path.HasExtension(path) ||
+             path.StartsWith("/app/@", StringComparison.Ordinal) ||
+             path.StartsWith("/app/src/", StringComparison.Ordinal) ||
+             path.StartsWith("/app/node_modules/", StringComparison.Ordinal));
+
+        if (shouldProxy)
+        {
+            using var httpClient = new HttpClient();
+            var viteUrl =
+                $"http://localhost:{viteServerPort}{path}{context.Request.QueryString}";
+            try
+            {
+                using var response = await httpClient.GetAsync(
+                    viteUrl,
+                    context.RequestAborted);
+                context.Response.StatusCode = (int)response.StatusCode;
+                if (response.Content.Headers.ContentType is not null)
+                {
+                    context.Response.ContentType =
+                        response.Content.Headers.ContentType.ToString();
+                }
+                await response.Content.CopyToAsync(
+                    context.Response.Body,
+                    context.RequestAborted);
+                return;
+            }
+            catch (HttpRequestException ex)
+            {
+                app.Logger.LogWarning(ex, "Could not proxy Vite asset {Path}", path);
+            }
+        }
+
+        await next();
+    });
+}
+
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
@@ -185,10 +294,39 @@ app.MapStaticAssets();
 app.MapRazorPages()
     .WithStaticAssets();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || isPreviewMode)
 {
-    app.UseWebSockets();
     app.UseViteDevelopmentServer(true);
 }
 
 app.Run();
+
+static async Task RelayWebSocket(
+    System.Net.WebSockets.WebSocket source,
+    System.Net.WebSockets.WebSocket destination)
+{
+    var buffer = new byte[4096];
+    try
+    {
+        while (source.State == System.Net.WebSockets.WebSocketState.Open)
+        {
+            var result = await source.ReceiveAsync(
+                new ArraySegment<byte>(buffer),
+                CancellationToken.None);
+            if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+                break;
+            if (destination.State == System.Net.WebSockets.WebSocketState.Open)
+            {
+                await destination.SendAsync(
+                    new ArraySegment<byte>(buffer, 0, result.Count),
+                    result.MessageType,
+                    result.EndOfMessage,
+                    CancellationToken.None);
+            }
+        }
+    }
+    catch (System.Net.WebSockets.WebSocketException)
+    {
+        // Either side closed the development-only HMR connection.
+    }
+}
