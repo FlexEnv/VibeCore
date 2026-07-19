@@ -5,7 +5,5 @@ namespace VibeCore.Pages;
 
 public class IndexModel : PageModel
 {
-    public void OnGet()
-    {
-    }
+    public IActionResult OnGet() => Redirect("/app");
 }
