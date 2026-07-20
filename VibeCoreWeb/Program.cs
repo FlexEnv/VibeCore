@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using VibeCore.Auth;
 using VibeCore.Data;
 using VibeCore.Security;
@@ -10,6 +12,8 @@ using Vite.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var flexSsoEnabled = builder.Configuration.GetValue<bool>("FlexSso:Enabled");
+var isPreviewMode =
+    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PREVIEW_URL"));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -115,7 +119,17 @@ if (builder.Configuration.GetValue("DataProtection:PersistKeysToDatabase", true)
     dataProtection.PersistKeysToDbContext<ApplicationDbContext>();
 }
 
-builder.Services.AddHealthChecks();
+var healthChecks = builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseReadinessHealthCheck>(
+        "database",
+        tags: ["ready"]);
+if (builder.Environment.IsDevelopment() || isPreviewMode)
+{
+    healthChecks.AddCheck(
+        "vite",
+        new ViteReadinessHealthCheck(viteServerPort: null),
+        tags: ["ready"]);
+}
 builder.Services.Configure<FlexSsoOptions>(builder.Configuration.GetSection(FlexSsoOptions.SectionName));
 builder.Services.AddHttpClient(FlexSsoDefaults.HttpClientName);
 builder.Services.AddSingleton<FlexSsoTransactionProtector>();
@@ -196,8 +210,6 @@ app.UseWebSockets();
 
 // Keep Vite on an internal port and proxy its assets/HMR through ASP.NET's
 // single public port, matching the proven FlexEnv sqlite preview setup.
-var isPreviewMode =
-    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PREVIEW_URL"));
 if (app.Environment.IsDevelopment() || isPreviewMode)
 {
     app.Use(async (context, next) =>
@@ -302,7 +314,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health/live").AllowAnonymous();
+app.MapHealthChecks(
+        "/health/live",
+        new HealthCheckOptions
+        {
+            Predicate = _ => false
+        })
+    .AllowAnonymous();
+app.MapHealthChecks(
+        "/health/ready",
+        new HealthCheckOptions
+        {
+            Predicate = registration =>
+                registration.Tags.Contains("ready")
+        })
+    .AllowAnonymous();
 app.MapStaticAssets();
 app.MapRazorPages()
     .WithStaticAssets();
@@ -341,5 +367,76 @@ static async Task RelayWebSocket(
     catch (System.Net.WebSockets.WebSocketException)
     {
         // Either side closed the development-only HMR connection.
+    }
+}
+
+sealed class DatabaseReadinessHealthCheck(
+    IServiceScopeFactory scopeFactory) : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+            var database = scope.ServiceProvider
+                .GetRequiredService<ApplicationDbContext>()
+                .Database;
+            return await database.CanConnectAsync(cancellationToken)
+                ? HealthCheckResult.Healthy("The application database is reachable.")
+                : HealthCheckResult.Unhealthy("The application database is not reachable.");
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(
+                "The application database readiness check failed.",
+                ex);
+        }
+    }
+}
+
+sealed class ViteReadinessHealthCheck : IHealthCheck
+{
+    private readonly int? _viteServerPort;
+
+    public ViteReadinessHealthCheck(int? viteServerPort)
+    {
+        _viteServerPort = viteServerPort;
+    }
+
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var port = _viteServerPort ??
+            (int.TryParse(
+                Environment.GetEnvironmentVariable("VITE_PORT"),
+                out var configuredPort)
+                ? configuredPort
+                : 5173);
+        try
+        {
+            using var client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(3)
+            };
+            using var response = await client.GetAsync(
+                $"http://127.0.0.1:{port}/@vite/client",
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+            return response.IsSuccessStatusCode
+                ? HealthCheckResult.Healthy("The Vite development server is reachable.")
+                : HealthCheckResult.Unhealthy(
+                    $"The Vite development server returned HTTP {(int)response.StatusCode}.");
+        }
+        catch (Exception ex) when (
+            ex is HttpRequestException or
+            TaskCanceledException)
+        {
+            return HealthCheckResult.Unhealthy(
+                "The Vite development server is not reachable.",
+                ex);
+        }
     }
 }
