@@ -4,7 +4,7 @@
   "installCommand": "/app/bootstrap-vibecore.sh",
   "previewCommand": "./scripts/flex-preview.sh",
   "previewPort": 3000,
-  "healthPath": "/health/live",
+  "healthPath": "/health/ready",
   "environment": {
     "ASPNETCORE_ENVIRONMENT": "Development",
     "Database__Provider": "Sqlite",
