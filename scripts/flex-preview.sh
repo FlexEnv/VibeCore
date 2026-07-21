@@ -22,6 +22,7 @@ VITE_PID=$!
 cd "$ROOT_DIR"
 dotnet watch \
   --project VibeCoreWeb/VibeCoreWeb.csproj \
+  --no-hot-reload \
   --non-interactive \
   run --no-restore --urls "$ASPNETCORE_URLS" &
 DOTNET_PID=$!

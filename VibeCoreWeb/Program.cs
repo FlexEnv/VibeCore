@@ -422,7 +422,7 @@ sealed class ViteReadinessHealthCheck : IHealthCheck
                 Timeout = TimeSpan.FromSeconds(3)
             };
             using var response = await client.GetAsync(
-                $"http://127.0.0.1:{port}/@vite/client",
+                $"http://127.0.0.1:{port}/app/@vite/client",
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
             return response.IsSuccessStatusCode
