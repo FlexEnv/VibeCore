@@ -1,5 +1,4 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper *, Vite.AspNetCore
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var antiforgeryToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;

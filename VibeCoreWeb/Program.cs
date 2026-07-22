@@ -156,15 +156,6 @@ var viteServerPort = int.TryParse(
     ? parsedVitePort
     : 5173;
 var viteServerHost = Environment.GetEnvironmentVariable("VITE_SERVER_HOST");
-if (string.IsNullOrWhiteSpace(viteServerHost))
-{
-    var previewUrl = Environment.GetEnvironmentVariable("PREVIEW_URL");
-    if (!string.IsNullOrWhiteSpace(previewUrl) &&
-        Uri.TryCreate(previewUrl, UriKind.Absolute, out var previewUri))
-    {
-        viteServerHost = previewUri.Host;
-    }
-}
 viteServerHost ??= "localhost";
 
 builder.Services.AddViteServices(options =>

@@ -2,45 +2,25 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-const rawPreviewUrl =
-  process.env.PREVIEW_URL ??
-  process.env.VITE_PUBLIC_URL ??
-  process.env.PUBLIC_PREVIEW_URL ??
-  "";
-
-let previewUrl: URL | undefined;
-if (rawPreviewUrl) {
-  try {
-    previewUrl = new URL(rawPreviewUrl);
-  } catch {
-    previewUrl = undefined;
-  }
-}
+const previewUrl = process.env.PREVIEW_URL
+  ? new URL(process.env.PREVIEW_URL)
+  : undefined;
 
 const configuredHmrHost =
-  process.env.VITE_HMR_HOST ??
-  process.env.HMR_HOST ??
-  previewUrl?.host ??
-  "localhost";
-const hmrHost = configuredHmrHost
-  .replace(/^https?:\/\//, "")
-  .replace(/\/+$/, "");
+  process.env.VITE_HMR_HOST ?? previewUrl?.hostname;
 const hmrProtocol =
   process.env.VITE_HMR_PROTOCOL ??
-  process.env.HMR_PROTOCOL ??
-  (previewUrl?.protocol === "https:" ? "wss" : "ws");
+  (previewUrl
+    ? previewUrl.protocol === "https:"
+      ? "wss"
+      : "ws"
+    : undefined);
 const vitePort = Number.parseInt(process.env.VITE_PORT ?? "5173", 10);
-const aspNetPort = Number.parseInt(
-  process.env.ASPNETCORE_HTTP_PORT ?? process.env.ASPNET_PORT ?? "3000",
-  10,
-);
 const configuredClientPort = Number.parseInt(
-  process.env.VITE_HMR_CLIENT_PORT ?? process.env.HMR_CLIENT_PORT ?? "",
+  process.env.VITE_HMR_CLIENT_PORT ?? "",
   10,
 );
-const hmrClientPort =
-  configuredClientPort ||
-  (previewUrl ? undefined : aspNetPort);
+const hmrClientPort = configuredClientPort || undefined;
 
 export default defineConfig({
   appType: "custom",
@@ -52,10 +32,10 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     hmr: {
-      protocol: hmrProtocol,
-      host: hmrHost,
-      clientPort: hmrClientPort,
       path: "/__vite_hmr",
+      ...(hmrProtocol ? { protocol: hmrProtocol } : {}),
+      ...(configuredHmrHost ? { host: configuredHmrHost } : {}),
+      ...(hmrClientPort ? { clientPort: hmrClientPort } : {}),
     },
   },
   base: "/app/",
