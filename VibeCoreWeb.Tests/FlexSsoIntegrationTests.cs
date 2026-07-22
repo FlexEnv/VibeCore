@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Quartz.Logging;
 using VibeCore.Areas.Api.Controllers;
 using VibeCore.Data;
 using VibeCore.Models;
@@ -124,6 +125,77 @@ public sealed class FlexSsoIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task Reader_can_inspect_scheduled_tasks_but_cannot_mutate_them()
+    {
+        using var client = CreateClient();
+        using var callbackResponse = await SignInAsync(client);
+        var antiforgeryToken = await GetAntiforgeryTokenAsync(client);
+
+        using var handlersResponse = await client.GetAsync("/api/scheduled-tasks/handlers");
+        var handlers = await handlersResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(HttpStatusCode.OK, handlersResponse.StatusCode);
+        Assert.Contains(handlers.EnumerateArray(), handler =>
+            handler.GetProperty("key").GetString() == "todo-summary");
+
+        using var createRequest = CreateScheduleRequest(antiforgeryToken);
+        using var createResponse = await client.SendAsync(createRequest);
+        Assert.Equal(HttpStatusCode.Forbidden, createResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Operator_can_manage_and_trigger_a_scheduled_task()
+    {
+        _factory.Roles = ["Reader", "Operator"];
+        using var client = CreateClient();
+        using var callbackResponse = await SignInAsync(client);
+        var antiforgeryToken = await GetAntiforgeryTokenAsync(client);
+
+        using var createRequest = CreateScheduleRequest(antiforgeryToken);
+        using var createResponse = await client.SendAsync(createRequest);
+        var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var id = created.GetProperty("id").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(id));
+
+        foreach (var action in new[] { "pause", "resume", "run" })
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                $"/api/scheduled-tasks/schedules/{id}/{action}");
+            request.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
+            using var response = await client.SendAsync(request);
+            Assert.Equal(
+                action == "run" ? HttpStatusCode.Accepted : HttpStatusCode.NoContent,
+                response.StatusCode);
+        }
+
+        JsonElement runs = default;
+        for (var attempt = 0; attempt < 20; attempt++)
+        {
+            using var runsResponse = await client.GetAsync(
+                $"/api/scheduled-tasks/schedules/{id}/runs");
+            var content = await runsResponse.Content.ReadAsStringAsync();
+            Assert.True(
+                runsResponse.IsSuccessStatusCode,
+                $"Run history returned {(int)runsResponse.StatusCode}: {content}");
+            runs = JsonSerializer.Deserialize<JsonElement>(content);
+            if (runs.EnumerateArray().Any(run =>
+                    run.GetProperty("status").GetString() == "Succeeded"))
+                break;
+            await Task.Delay(50);
+        }
+        Assert.Contains(runs.EnumerateArray(), run =>
+            run.GetProperty("status").GetString() == "Succeeded");
+
+        using var deleteRequest = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/scheduled-tasks/schedules/{id}");
+        deleteRequest.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
+        using var deleteResponse = await client.SendAsync(deleteRequest);
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+    }
+
+    [Fact]
     public void Ef_model_contains_no_identity_tables()
     {
         var context = new ApplicationDbContextFactory().CreateDbContext([]);
@@ -144,13 +216,19 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             File.Delete(_databasePath);
     }
 
-    private HttpClient CreateClient() => _factory.CreateClient(
-        new WebApplicationFactoryClientOptions
+    private HttpClient CreateClient()
+    {
+        // Quartz's Microsoft logging bridge is process-global. A previous
+        // WebApplicationFactory may have disposed the factory it installed.
+        LogProvider.SetCurrentLogProvider(null!);
+        LogProvider.IsDisabled = true;
+        return _factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
             BaseAddress = new Uri("https://preview.test"),
             HandleCookies = true,
         });
+    }
 
     private static async Task<HttpResponseMessage> SignInAsync(HttpClient client)
     {
@@ -164,9 +242,40 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             $"&iss={Uri.EscapeDataString(Authority)}");
     }
 
+    private static async Task<string> GetAntiforgeryTokenAsync(HttpClient client)
+    {
+        using var appResponse = await client.GetAsync("/app/");
+        var html = await appResponse.Content.ReadAsStringAsync();
+        var token = Regex.Match(
+            html,
+            "<meta name=\"csrf-token\" content=\"([^\"]+)\"").Groups[1].Value;
+        return Assert.IsType<string>(token is { Length: > 0 } ? token : null);
+    }
+
+    private static HttpRequestMessage CreateScheduleRequest(string antiforgeryToken)
+    {
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "/api/scheduled-tasks/schedules")
+        {
+            Content = JsonContent.Create(new
+            {
+                name = "Integration schedule",
+                description = "Runs the harmless example handler.",
+                handlerKey = "todo-summary",
+                kind = "OneTime",
+                runAt = DateTimeOffset.UtcNow.AddHours(1),
+            }),
+        };
+        request.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
+        return request;
+    }
+
     private sealed class VibeCoreFactory(string databasePath)
         : WebApplicationFactory<Program>
     {
+        public string[] Roles { get; set; } = ["Reader"];
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Development");
@@ -182,17 +291,18 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<IHttpClientFactory>();
-                services.AddSingleton<IHttpClientFactory>(new StubHttpClientFactory());
+                services.AddSingleton<IHttpClientFactory>(
+                    new StubHttpClientFactory(() => Roles));
             });
         }
     }
 
-    private sealed class StubHttpClientFactory : IHttpClientFactory
+    private sealed class StubHttpClientFactory(Func<string[]> getRoles) : IHttpClientFactory
     {
-        public HttpClient CreateClient(string name) => new(new StubTokenHandler());
+        public HttpClient CreateClient(string name) => new(new StubTokenHandler(getRoles));
     }
 
-    private sealed class StubTokenHandler : HttpMessageHandler
+    private sealed class StubTokenHandler(Func<string[]> getRoles) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -205,7 +315,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
                 name = "Ada Lovelace",
                 tenantId = "tenant-123",
                 tenantRole = "Product",
-                roles = new[] { "Reader" },
+                roles = getRoles(),
             });
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {

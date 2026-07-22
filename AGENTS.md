@@ -33,6 +33,20 @@ npm run update-api
 Commit the updated `swagger.json` and generated TypeScript client with the API
 change.
 
+## Scheduled tasks
+
+Use the scheduler foundation in `VibeCoreWeb/Scheduling` instead of adding a
+second scheduler package. Implement `IScheduledTaskHandler`, register it with a
+stable lowercase `AddScheduledTask<THandler>` key, and keep handlers
+cancellable, idempotent, and free of browser-visible secrets. The generic admin
+page deliberately has no arbitrary JSON payload editor; add typed domain models,
+API validation, and product UI when a task needs per-user or per-record input.
+
+Do not promise guaranteed continuous availability in a Preview App. Preview
+containers have no inactivity timeout, but may be stopped explicitly or evicted
+for capacity and use disposable SQLite data. The later always-running Hosted App
+runtime supplies the production continuity contract.
+
 ## ASP.NET Core positional request records
 
 For positional records used as inbound MVC action models, target validation

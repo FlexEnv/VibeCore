@@ -17,6 +17,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.10" />
         <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.18.2" />
+        <PackageReference Include="Quartz.Serialization.SystemTextJson" Version="3.18.2" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
         <PackageReference Include="Vite.AspNetCore" Version="2.4.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />

@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json.Serialization;
+using Quartz;
 using VibeCore.Auth;
 using VibeCore.Data;
+using VibeCore.Scheduling;
 using VibeCore.Security;
 using Vite.AspNetCore;
 
@@ -40,6 +43,42 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         $"Unsupported database provider '{databaseProvider}'. Use 'PostgreSql' or 'Sqlite'.");
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services
+    .AddScheduledTask<TodoSummaryTask>(
+        "todo-summary",
+        "Todo summary",
+        "Counts incomplete todos and writes the result to the server log.")
+    .AddScoped<ScheduledTaskService>()
+    .AddScoped<ScheduledTaskExecutor>();
+builder.Services.AddHostedService<QuartzSqliteSchemaInitializer>();
+builder.Services.AddQuartz(quartz =>
+{
+    quartz.SchedulerName = "VibeCore";
+    quartz.UseDefaultThreadPool(pool => pool.MaxConcurrency = 4);
+    quartz.UsePersistentStore(store =>
+    {
+        store.UseProperties = true;
+        store.UseSystemTextJsonSerializer();
+        if (databaseProvider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+        {
+            store.UseMicrosoftSQLite(connectionString);
+        }
+        else
+        {
+            store.UseGenericDatabase(
+                "Npgsql",
+                provider => provider.ConnectionString = connectionString);
+            store.UseClustering();
+        }
+    });
+});
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete = true;
+});
+builder.Services.Configure<HostOptions>(options =>
+    options.ShutdownTimeout = TimeSpan.FromSeconds(30));
 
 builder.Services
     .AddAuthentication(options =>
@@ -86,7 +125,9 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/App"));
 builder.Services.AddControllers(options =>
-    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()))
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddAntiforgery(options =>
 {
@@ -108,6 +149,9 @@ var healthChecks = builder.Services.AddHealthChecks()
     .AddCheck<DatabaseReadinessHealthCheck>(
         "database",
         tags: ["ready"]);
+healthChecks.AddCheck<SchedulerReadinessHealthCheck>(
+    "scheduler",
+    tags: ["ready"]);
 if (builder.Environment.IsDevelopment() || isPreviewMode)
 {
     healthChecks.AddCheck(
@@ -378,6 +422,26 @@ sealed class DatabaseReadinessHealthCheck(
             return HealthCheckResult.Unhealthy(
                 "The application database readiness check failed.",
                 ex);
+        }
+    }
+}
+
+sealed class SchedulerReadinessHealthCheck(ISchedulerFactory schedulerFactory) : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var scheduler = await schedulerFactory.GetScheduler(cancellationToken);
+            return scheduler.IsStarted && !scheduler.IsShutdown
+                ? HealthCheckResult.Healthy("The scheduled task engine is running.")
+                : HealthCheckResult.Unhealthy("The scheduled task engine is not running.");
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy("The scheduled task readiness check failed.", ex);
         }
     }
 }

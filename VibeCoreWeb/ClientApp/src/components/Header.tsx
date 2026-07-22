@@ -1,5 +1,6 @@
 import { useTheme } from "../contexts/ThemeContext";
 import { useGetApiUserCurrent } from "../api/user/user";
+import { NavLink } from "react-router-dom";
 
 function Header() {
   const { theme, toggleTheme } = useTheme();
@@ -9,10 +10,14 @@ function Header() {
 
   return (
     <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
-          Todos
-        </h1>
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-6">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">VibeCore</h1>
+          <nav className="flex gap-1 text-sm">
+            <NavLink to="/" end className={({ isActive }) => `rounded-lg px-3 py-2 ${isActive ? "bg-sky-50 font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-300" : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900"}`}>Todos</NavLink>
+            <NavLink to="/scheduled-tasks" className={({ isActive }) => `rounded-lg px-3 py-2 ${isActive ? "bg-sky-50 font-medium text-sky-700 dark:bg-sky-950 dark:text-sky-300" : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900"}`}>Scheduled tasks</NavLink>
+          </nav>
+        </div>
         <div className="flex items-center gap-3">
           <span className="max-w-48 truncate text-sm text-slate-600 dark:text-slate-300" title={identity}>
             {identity}

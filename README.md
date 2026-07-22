@@ -47,6 +47,36 @@ authority configuration.
   development previews.
 - Data Protection keys may be persisted in the application database.
 - Swagger/OpenAPI generates the TypeScript API client.
+- Quartz.NET runs persistent one-off and recurring server-side tasks from the
+  same SQLite or PostgreSQL database, with a React operator page at
+  `/app/scheduled-tasks`.
+
+## Scheduled tasks
+
+Scheduled work is registered as a typed server-side handler and is then managed
+through the API or React page. Handlers receive cancellation and execution IDs,
+must be idempotent, and should read typed application data rather than accepting
+arbitrary dashboard payloads.
+
+```csharp
+public sealed class RefreshReportTask : IScheduledTaskHandler
+{
+    public Task ExecuteAsync(
+        ScheduledTaskExecutionContext context,
+        CancellationToken cancellationToken) => RefreshAsync(cancellationToken);
+}
+
+builder.Services.AddScheduledTask<RefreshReportTask>(
+    "refresh-report",
+    "Refresh report",
+    "Rebuilds the report from current application data.");
+```
+
+The default policy prevents overlapping runs and retries failures after 1, 5,
+and 15 minutes. Pass `ScheduledTaskHandlerOptions` during registration to change
+that policy. Preview containers have no inactivity timeout, but can still be
+stopped explicitly or evicted for capacity. They are suitable for building and
+testing schedules but do not carry a continuous-availability guarantee.
 
 After changing controllers or API models, run the application and then:
 

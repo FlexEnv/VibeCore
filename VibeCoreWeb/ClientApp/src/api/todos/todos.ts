@@ -30,6 +30,8 @@ import type {
 import { customFetch } from '.././client.ts';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -99,16 +101,16 @@ export const getGetApiTodosQueryKey = () => {
     }
 
 
-export const getGetApiTodosQueryOptions = <TData = Awaited<ReturnType<typeof getApiTodos>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, }
+export const getGetApiTodosQueryOptions = <TData = Awaited<ReturnType<typeof getApiTodos>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApiTodosQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTodos>>> = ({ signal }) => getApiTodos({ signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTodos>>> = ({ signal }) => getApiTodos({ signal, ...requestOptions });
 
 
 
@@ -128,7 +130,7 @@ export function useGetApiTodos<TData = Awaited<ReturnType<typeof getApiTodos>>, 
           TError,
           Awaited<ReturnType<typeof getApiTodos>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiTodos<TData = Awaited<ReturnType<typeof getApiTodos>>, TError = unknown>(
@@ -138,16 +140,16 @@ export function useGetApiTodos<TData = Awaited<ReturnType<typeof getApiTodos>>, 
           TError,
           Awaited<ReturnType<typeof getApiTodos>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiTodos<TData = Awaited<ReturnType<typeof getApiTodos>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetApiTodos<TData = Awaited<ReturnType<typeof getApiTodos>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodos>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -209,15 +211,15 @@ export const postApiTodos = async (todoItem?: TodoItem, options?: RequestInit): 
 
 
 export const getPostApiTodosMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTodos>>, TError,{data?: TodoItem}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTodos>>, TError,{data?: TodoItem}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postApiTodos>>, TError,{data?: TodoItem}, TContext> => {
 
 const mutationKey = ['postApiTodos'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -225,7 +227,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiTodos>>, {data?: TodoItem}> = (props) => {
           const {data} = props ?? {};
 
-          return  postApiTodos(data,)
+          return  postApiTodos(data,requestOptions)
         }
 
 
@@ -240,7 +242,7 @@ const {mutation: mutationOptions} = options ?
     export type PostApiTodosMutationError = unknown
 
     export const usePostApiTodos = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTodos>>, TError,{data?: TodoItem}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiTodos>>, TError,{data?: TodoItem}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postApiTodos>>,
         TError,
@@ -301,16 +303,16 @@ export const getGetApiTodosIdQueryKey = (id: number,) => {
     }
 
 
-export const getGetApiTodosIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiTodosId>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, }
+export const getGetApiTodosIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiTodosId>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApiTodosIdQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTodosId>>> = ({ signal }) => getApiTodosId(id, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiTodosId>>> = ({ signal }) => getApiTodosId(id, { signal, ...requestOptions });
 
 
 
@@ -330,7 +332,7 @@ export function useGetApiTodosId<TData = Awaited<ReturnType<typeof getApiTodosId
           TError,
           Awaited<ReturnType<typeof getApiTodosId>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiTodosId<TData = Awaited<ReturnType<typeof getApiTodosId>>, TError = unknown>(
@@ -340,16 +342,16 @@ export function useGetApiTodosId<TData = Awaited<ReturnType<typeof getApiTodosId
           TError,
           Awaited<ReturnType<typeof getApiTodosId>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetApiTodosId<TData = Awaited<ReturnType<typeof getApiTodosId>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, }
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetApiTodosId<TData = Awaited<ReturnType<typeof getApiTodosId>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, }
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiTodosId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -402,15 +404,15 @@ export const putApiTodosId = async (id: number,
 
 
 export const getPutApiTodosIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTodosId>>, TError,{id: number;data?: TodoItem}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTodosId>>, TError,{id: number;data?: TodoItem}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putApiTodosId>>, TError,{id: number;data?: TodoItem}, TContext> => {
 
 const mutationKey = ['putApiTodosId'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -418,7 +420,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiTodosId>>, {id: number;data?: TodoItem}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putApiTodosId(id,data,)
+          return  putApiTodosId(id,data,requestOptions)
         }
 
 
@@ -433,7 +435,7 @@ const {mutation: mutationOptions} = options ?
     export type PutApiTodosIdMutationError = unknown
 
     export const usePutApiTodosId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTodosId>>, TError,{id: number;data?: TodoItem}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiTodosId>>, TError,{id: number;data?: TodoItem}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putApiTodosId>>,
         TError,
@@ -478,15 +480,15 @@ export const deleteApiTodosId = async (id: number, options?: RequestInit): Promi
 
 
 export const getDeleteApiTodosIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTodosId>>, TError,{id: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTodosId>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteApiTodosId>>, TError,{id: number}, TContext> => {
 
 const mutationKey = ['deleteApiTodosId'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -494,7 +496,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiTodosId>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteApiTodosId(id,)
+          return  deleteApiTodosId(id,requestOptions)
         }
 
 
@@ -509,7 +511,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteApiTodosIdMutationError = unknown
 
     export const useDeleteApiTodosId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTodosId>>, TError,{id: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiTodosId>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteApiTodosId>>,
         TError,
@@ -554,15 +556,15 @@ export const patchApiTodosIdComplete = async (id: number, options?: RequestInit)
 
 
 export const getPatchApiTodosIdCompleteMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, TError,{id: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, TError,{id: number}, TContext> => {
 
 const mutationKey = ['patchApiTodosIdComplete'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -570,7 +572,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  patchApiTodosIdComplete(id,)
+          return  patchApiTodosIdComplete(id,requestOptions)
         }
 
 
@@ -585,7 +587,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchApiTodosIdCompleteMutationError = unknown
 
     export const usePatchApiTodosIdComplete = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, TError,{id: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApiTodosIdComplete>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof patchApiTodosIdComplete>>,
         TError,

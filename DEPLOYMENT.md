@@ -3,6 +3,11 @@
 VibeCore uses PostgreSQL, Flex SSO, and database-backed ASP.NET Core Data
 Protection in production. It has no local user store.
 
+Quartz executes scheduled tasks inside the ASP.NET Core process. Production
+hosting must keep at least one application instance running. PostgreSQL-backed
+Quartz clustering coordinates multiple instances; handlers must still be
+idempotent because execution is at-least-once across retries and failures.
+
 ## Required configuration
 
 ```text
@@ -18,8 +23,9 @@ at startup. Keep credentials in environment variables or a secret manager.
 
 ## Database migrations
 
-The committed PostgreSQL migration creates application data and Data Protection
-tables only. Generate and review future migrations with:
+The committed PostgreSQL migrations create application data, Data Protection,
+scheduled-task history, and the Quartz `qrtz_*` tables. Generate and review
+future migrations with:
 
 ```powershell
 dotnet tool restore
@@ -35,7 +41,9 @@ dotnet ef migrations has-pending-model-changes `
 ```
 
 Apply a reviewed idempotent SQL script or migration bundle before starting the
-new application version.
+new application version. The disposable SQLite preview path creates the Quartz
+schema idempotently at startup; production intentionally relies on the reviewed
+PostgreSQL migration.
 
 ## Container
 
