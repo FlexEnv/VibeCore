@@ -13,10 +13,6 @@ public sealed class ViteProxyTagHelper(
     IViteDevServerStatus viteStatus,
     IViteManifest manifest) : TagHelper
 {
-    private static readonly string DevelopmentCacheKey =
-        DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(
-            System.Globalization.CultureInfo.InvariantCulture);
-
     [HtmlAttributeName("vite-src")]
     public string? ViteSrc { get; set; }
 
@@ -32,8 +28,10 @@ public sealed class ViteProxyTagHelper(
         var normalizedPath = path.TrimStart('~', '/');
         if (viteStatus.IsMiddlewareEnable)
         {
-            var developmentUrl =
-                $"/app/{normalizedPath}?v={DevelopmentCacheKey}";
+            // Vite module URLs must remain canonical. Adding a cache-busting
+            // query here causes Vite to propagate it through only part of the
+            // import graph, which can instantiate React contexts more than once.
+            var developmentUrl = $"/app/{normalizedPath}";
             if (ViteSrc is not null)
             {
                 output.Attributes.RemoveAll("vite-src");
