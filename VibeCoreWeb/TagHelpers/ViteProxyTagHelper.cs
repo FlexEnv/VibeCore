@@ -39,9 +39,9 @@ public sealed class ViteProxyTagHelper(
                 output.Attributes.RemoveAll("vite-src");
                 output.Attributes.SetAttribute("src", developmentUrl);
                 output.PreElement.AppendHtml(
-                    $"<script type=\"module\" src=\"/app/@vite/client?v={DevelopmentCacheKey}\"></script>\n" +
+                    "<script type=\"module\" src=\"/app/@vite/client\"></script>\n" +
                     "<script type=\"module\">\n" +
-                    $"  import RefreshRuntime from '/app/@react-refresh?v={DevelopmentCacheKey}';\n" +
+                    "  import RefreshRuntime from '/app/@react-refresh';\n" +
                     "  RefreshRuntime.injectIntoGlobalHook(window);\n" +
                     "  window.$RefreshReg$ = () => {};\n" +
                     "  window.$RefreshSig$ = () => (type) => type;\n" +
