@@ -88,8 +88,11 @@ public sealed class FlexSsoController(
         }
 
         var client = httpClientFactory.CreateClient(FlexSsoDefaults.HttpClientName);
+        var backchannelAuthority = string.IsNullOrWhiteSpace(config.BackchannelAuthority)
+            ? config.Authority
+            : config.BackchannelAuthority;
         using var response = await client.PostAsJsonAsync(
-            $"{config.Authority.TrimEnd('/')}{config.TokenPath}",
+            $"{backchannelAuthority.TrimEnd('/')}{config.TokenPath}",
             new FlexSsoTokenRequest(code, transaction.CodeVerifier, BuildCallbackUri()),
             ct);
 
@@ -153,6 +156,13 @@ public sealed class FlexSsoController(
             authority.Scheme is not ("https" or "http"))
         {
             throw new InvalidOperationException("FlexSso:Authority must be an absolute HTTP(S) URL.");
+        }
+        if (!string.IsNullOrWhiteSpace(config.BackchannelAuthority) &&
+            (!Uri.TryCreate(config.BackchannelAuthority, UriKind.Absolute, out var backchannelAuthority) ||
+             backchannelAuthority.Scheme is not ("https" or "http")))
+        {
+            throw new InvalidOperationException(
+                "FlexSso:BackchannelAuthority must be an absolute HTTP(S) URL.");
         }
 
         return config;
