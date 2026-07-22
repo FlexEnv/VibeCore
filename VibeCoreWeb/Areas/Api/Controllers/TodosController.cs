@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VibeCore.Data;
 using VibeCore.Models;
+using VibeCore.Security;
 using Microsoft.AspNetCore.Authorization;
 
 namespace VibeCore.Areas.Api.Controllers;
@@ -9,7 +10,7 @@ namespace VibeCore.Areas.Api.Controllers;
 [Area("Api")]
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = AppPolicies.Reader)]
 public class TodosController : ControllerBase
 {
     private readonly ApplicationDbContext _context;

@@ -150,16 +150,12 @@ public sealed class FlexSsoController(
     private FlexSsoOptions GetValidatedOptions()
     {
         var config = options.Value;
-        if (!config.Enabled)
-            throw new InvalidOperationException("Flex SSO is not enabled.");
-        if (!Uri.TryCreate(config.Authority, UriKind.Absolute, out var authority) ||
-            authority.Scheme is not ("https" or "http"))
+        if (!FlexSsoOptions.IsValidHttpAuthority(config.Authority))
         {
             throw new InvalidOperationException("FlexSso:Authority must be an absolute HTTP(S) URL.");
         }
         if (!string.IsNullOrWhiteSpace(config.BackchannelAuthority) &&
-            (!Uri.TryCreate(config.BackchannelAuthority, UriKind.Absolute, out var backchannelAuthority) ||
-             backchannelAuthority.Scheme is not ("https" or "http")))
+            !FlexSsoOptions.IsValidHttpAuthority(config.BackchannelAuthority))
         {
             throw new InvalidOperationException(
                 "FlexSso:BackchannelAuthority must be an absolute HTTP(S) URL.");
@@ -174,8 +170,10 @@ public sealed class FlexSsoController(
     private CookieOptions BuildTransactionCookieOptions() => new()
     {
         HttpOnly = true,
-        Secure = Request.IsHttps,
-        SameSite = SameSiteMode.Lax,
+        // The authorization redirect completes inside the preview iframe. Lax
+        // cookies are withheld for that cross-site, nested navigation.
+        Secure = true,
+        SameSite = SameSiteMode.None,
         Path = "/",
         MaxAge = TimeSpan.FromMinutes(5),
         IsEssential = true,

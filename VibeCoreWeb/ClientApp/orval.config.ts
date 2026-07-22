@@ -13,10 +13,6 @@ export default defineConfig({
           path: "src/api/client.ts",
           name: "customFetch",
         },
-        query: {
-          useQuery: true,
-          useMutation: true,
-        },
       },
     },
   },

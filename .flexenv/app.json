@@ -9,7 +9,6 @@
     "ASPNETCORE_ENVIRONMENT": "Development",
     "Database__Provider": "Sqlite",
     "ConnectionStrings__DefaultConnection": "Data Source=/workspace/.flexenv/preview.db;Cache=Shared",
-    "DataProtection__PersistKeysToDatabase": "false",
-    "FlexSso__Enabled": "true"
+    "DataProtection__PersistKeysToDatabase": "false"
   }
 }

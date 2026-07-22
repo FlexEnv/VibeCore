@@ -15,9 +15,10 @@ export default function TodoList() {
   const invalidateTodos = () =>
     queryClient.invalidateQueries({ queryKey: ["/api/Todos"] });
 
-  const { data: todos = [], isLoading, error } = useGetApiTodos({
+  const { data: todosResponse, isLoading, error } = useGetApiTodos({
     query: { refetchInterval: 5000 },
   });
+  const todos = todosResponse?.data ?? [];
   const createMutation = usePostApiTodos({
     mutation: { onSuccess: invalidateTodos },
   });
@@ -49,17 +50,7 @@ export default function TodoList() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-violet-600 bg-clip-text text-transparent">
-          Realtime Todo List!
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400">
-          Powered by ASP.NET Core API + Entity Framework + Tanstack Query
-        </p>
-      </div>
-
-      {/* Add Todo Form */}
+    <div className="w-full space-y-6">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"

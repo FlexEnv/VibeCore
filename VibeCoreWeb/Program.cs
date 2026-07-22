@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +10,6 @@ using VibeCore.Security;
 using Vite.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-var flexSsoEnabled = builder.Configuration.GetValue<bool>("FlexSso:Enabled");
 var isPreviewMode =
     !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PREVIEW_URL"));
 
@@ -43,46 +41,37 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+builder.Services
+    .AddAuthentication(options =>
     {
-        options.SignIn.RequireConfirmedAccount = false;
-        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.DefaultAuthenticateScheme = FlexSsoDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = FlexSsoDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = FlexSsoDefaults.AuthenticationScheme;
     })
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-if (flexSsoEnabled)
-{
-    builder.Services
-        .AddAuthentication(options =>
+    .AddCookie(FlexSsoDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = "__Host-VibeCore.FlexSso";
+        options.Cookie.HttpOnly = true;
+        // Preview apps are embedded on the Flex host, so their authentication
+        // cookie must be available from a cross-site iframe.
+        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.LoginPath = "/flex-auth/login";
+        options.AccessDeniedPath = "/flex-auth/denied";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.Events.OnRedirectToLogin = context =>
         {
-            options.DefaultAuthenticateScheme = FlexSsoDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = FlexSsoDefaults.AuthenticationScheme;
-            options.DefaultSignInScheme = FlexSsoDefaults.AuthenticationScheme;
-        })
-        .AddCookie(FlexSsoDefaults.AuthenticationScheme, options =>
-        {
-            options.Cookie.Name = "__Host-VibeCore.FlexSso";
-            options.Cookie.HttpOnly = true;
-            options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            options.LoginPath = "/flex-auth/login";
-            options.AccessDeniedPath = "/flex-auth/denied";
-            options.SlidingExpiration = true;
-            options.ExpireTimeSpan = TimeSpan.FromHours(8);
-            options.Events.OnRedirectToLogin = context =>
+            if (context.Request.Path.StartsWithSegments("/api"))
             {
-                if (context.Request.Path.StartsWithSegments("/api"))
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return Task.CompletedTask;
-                }
-
-                context.Response.Redirect(context.RedirectUri);
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
-            };
-        });
-}
+            }
+
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+    });
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AppPolicies.Reader, policy =>
@@ -94,12 +83,8 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AppPolicies.Administrator, policy =>
         policy.RequireRole("Administrator"));
 
-var razorPages = builder.Services.AddRazorPages();
-if (flexSsoEnabled)
-{
-    razorPages.AddRazorPagesOptions(options =>
-        options.Conventions.AuthorizeFolder("/App"));
-}
+builder.Services.AddRazorPages(options =>
+    options.Conventions.AuthorizeFolder("/App"));
 builder.Services.AddControllers(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute()));
 
@@ -130,7 +115,17 @@ if (builder.Environment.IsDevelopment() || isPreviewMode)
         new ViteReadinessHealthCheck(viteServerPort: null),
         tags: ["ready"]);
 }
-builder.Services.Configure<FlexSsoOptions>(builder.Configuration.GetSection(FlexSsoOptions.SectionName));
+builder.Services
+    .AddOptions<FlexSsoOptions>()
+    .Bind(builder.Configuration.GetSection(FlexSsoOptions.SectionName))
+    .Validate(
+        options => FlexSsoOptions.IsValidHttpAuthority(options.Authority),
+        "FlexSso:Authority must be an absolute HTTP(S) URL.")
+    .Validate(
+        options => string.IsNullOrWhiteSpace(options.BackchannelAuthority) ||
+            FlexSsoOptions.IsValidHttpAuthority(options.BackchannelAuthority),
+        "FlexSso:BackchannelAuthority must be an absolute HTTP(S) URL.")
+    .ValidateOnStart();
 builder.Services.AddHttpClient(FlexSsoDefaults.HttpClientName);
 builder.Services.AddSingleton<FlexSsoTransactionProtector>();
 
@@ -430,4 +425,8 @@ sealed class ViteReadinessHealthCheck : IHealthCheck
                 ex);
         }
     }
+}
+
+public partial class Program
+{
 }

@@ -1,48 +1,42 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
 
 namespace VibeCore.Areas.Api.Controllers;
 
 [Area("Api")]
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+[Authorize]
+public sealed class UserController : ControllerBase
 {
-    private readonly SignInManager<IdentityUser> _signInManager;
-    private readonly UserManager<IdentityUser> _userManager;
-
-    public UserController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
-    {
-        _signInManager = signInManager;
-        _userManager = userManager;
-    }
-
     [HttpGet("current")]
-    public async Task<ActionResult<UserInfoDto>> GetCurrentUser()
+    public ActionResult<UserInfoDto> GetCurrentUser()
     {
-        if (!_signInManager.IsSignedIn(User))
-        {
-            return Ok(new UserInfoDto { IsAuthenticated = false });
-        }
-
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            return Ok(new UserInfoDto { IsAuthenticated = false });
-        }
-
         return Ok(new UserInfoDto
         {
             IsAuthenticated = true,
-            UserName = user.UserName,
-            Email = user.Email
+            UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+            UserName = User.Identity?.Name,
+            Email = User.FindFirstValue(ClaimTypes.Email),
+            TenantId = User.FindFirstValue("flex:tenant_id"),
+            TenantRole = User.FindFirstValue("flex:tenant_role"),
+            Roles = User.FindAll(ClaimTypes.Role)
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToArray(),
         });
     }
 }
 
-public class UserInfoDto
+public sealed class UserInfoDto
 {
     public bool IsAuthenticated { get; set; }
+    public string? UserId { get; set; }
     public string? UserName { get; set; }
     public string? Email { get; set; }
+    public string? TenantId { get; set; }
+    public string? TenantRole { get; set; }
+    public IReadOnlyList<string> Roles { get; set; } = [];
 }
