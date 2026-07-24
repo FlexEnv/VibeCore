@@ -49,6 +49,28 @@ Commit the updated `swagger.json` and generated TypeScript client with the API
 change. Pass `-p:BuildClientApp=false` for backend-only builds that must not
 invoke Node or update generated client artifacts.
 
+## Flex PostgreSQL bindings
+
+Flex exposes a bound PostgreSQL data source as a server-side URL such as
+`postgresql://user@host:5432/database?sslmode=disable`. That URL is not an
+Npgsql keyword connection string. Do not pass it directly to
+`NpgsqlConnection`, `NpgsqlDataSource.Create`, or
+`NpgsqlConnectionStringBuilder`; doing so fails at runtime because Npgsql tries
+to interpret the URL as a connection-string keyword.
+
+Parse the value as a `Uri`, URL-decode its user information and database path,
+and construct an `NpgsqlConnectionStringBuilder` with `Host`, `Port`,
+`Database`, `Username`, and `Password` when present. Translate only recognized
+query options such as `sslmode` to their typed Npgsql properties. Keep the
+original value and every derived connection string on the server, and never log
+either one. Prefer a small shared parser/service over repeating this conversion
+in controllers.
+
+The configured environment-variable name comes from the Hosted App build
+prompt. Treat a missing or malformed binding as an unavailable-data response,
+not as a reason to guess another database or expose exception details to the
+browser.
+
 ## Scheduled tasks
 
 Use the scheduler foundation in `VibeCoreWeb/Scheduling` instead of adding a

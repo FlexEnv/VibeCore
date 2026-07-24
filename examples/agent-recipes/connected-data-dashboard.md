@@ -10,6 +10,12 @@ var connectionString = builder.Configuration["ANALYTICS_DATABASE_URL"]
         "The configured analytics connection is unavailable.");
 ```
 
+- The PostgreSQL binding value is a URL, not an Npgsql keyword connection
+  string. Parse it as a `Uri` and build an `NpgsqlConnectionStringBuilder`
+  explicitly before creating an `NpgsqlConnection` or `NpgsqlDataSource`.
+  URL-decode the username, password, and database path, and translate recognized
+  query parameters such as `sslmode` to typed builder properties. Never pass the
+  raw `postgresql://...` value to an Npgsql connection constructor.
 - Open connections only in backend services or controllers.
 - Prefer a dedicated least-privilege, read-only database role.
 - Use parameters for every value and an allowlist for sortable identifiers.
