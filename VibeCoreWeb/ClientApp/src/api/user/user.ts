@@ -4,9 +4,7 @@
  * VibeCore API
  * OpenAPI spec version: v1
  */
-import {
-  useQuery
-} from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -16,26 +14,24 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
-import type {
-  UserInfoDto
-} from '../models';
+import type { UserInfoDto } from "../models";
 
-import { customFetch } from '.././client.ts';
-
+import { customFetch } from ".././client.ts";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+const withQueryKey = <T extends object, K>(
+  query: T,
+  queryKey: K,
+): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
     // The explicit queryKey always wins, matching the previous
     // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
+    if (key === "queryKey") continue;
     Object.defineProperty(result, key, {
       enumerable: true,
       configurable: true,
@@ -46,112 +42,174 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type getApiUserCurrentResponse200TextPlain = {
-  data: UserInfoDto
-  status: 200
-}
+  data: UserInfoDto;
+  status: 200;
+};
 
 export type getApiUserCurrentResponse200ApplicationJson = {
-  data: UserInfoDto
-  status: 200
-}
+  data: UserInfoDto;
+  status: 200;
+};
 
 export type getApiUserCurrentResponse200TextJson = {
-  data: UserInfoDto
-  status: 200
-}
+  data: UserInfoDto;
+  status: 200;
+};
 
-export type getApiUserCurrentResponseSuccess = (getApiUserCurrentResponse200TextPlain | getApiUserCurrentResponse200ApplicationJson | getApiUserCurrentResponse200TextJson) & {
+export type getApiUserCurrentResponseSuccess = (
+  | getApiUserCurrentResponse200TextPlain
+  | getApiUserCurrentResponse200ApplicationJson
+  | getApiUserCurrentResponse200TextJson
+) & {
   headers: Headers;
 };
-;
-
-export type getApiUserCurrentResponse = (getApiUserCurrentResponseSuccess)
+export type getApiUserCurrentResponse = getApiUserCurrentResponseSuccess;
 
 export const getGetApiUserCurrentUrl = () => {
+  return `/api/User/current`;
+};
 
-
-
-
-  return `/api/User/current`
-}
-
-export const getApiUserCurrent = async ( options?: RequestInit): Promise<getApiUserCurrentResponse> => {
-
-  return customFetch<getApiUserCurrentResponse>(getGetApiUserCurrentUrl(),
-  {
+export const getApiUserCurrent = async (
+  options?: RequestInit,
+): Promise<getApiUserCurrentResponse> => {
+  return customFetch<getApiUserCurrentResponse>(getGetApiUserCurrentUrl(), {
     ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+    method: "GET",
+  });
+};
 
 export const getGetApiUserCurrentQueryKey = () => {
-    return [
-    `/api/User/current`
-    ] as const;
-    }
+  return [`/api/User/current`] as const;
+};
 
+export const getGetApiUserCurrentQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiUserCurrent>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getApiUserCurrent>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getGetApiUserCurrentQueryOptions = <TData = Awaited<ReturnType<typeof getApiUserCurrent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey = queryOptions?.queryKey ?? getGetApiUserCurrentQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiUserCurrent>>
+  > = ({ signal }) => getApiUserCurrent({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiUserCurrentQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiUserCurrent>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type GetApiUserCurrentQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiUserCurrent>>
+>;
+export type GetApiUserCurrentQueryError = unknown;
 
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiUserCurrent>>> = ({ signal }) => getApiUserCurrent({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiUserCurrentQueryResult = NonNullable<Awaited<ReturnType<typeof getApiUserCurrent>>>
-export type GetApiUserCurrentQueryError = unknown
-
-
-export function useGetApiUserCurrent<TData = Awaited<ReturnType<typeof getApiUserCurrent>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData>> & Pick<
+export function useGetApiUserCurrent<
+  TData = Awaited<ReturnType<typeof getApiUserCurrent>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiUserCurrent>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiUserCurrent>>,
           TError,
           Awaited<ReturnType<typeof getApiUserCurrent>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiUserCurrent<TData = Awaited<ReturnType<typeof getApiUserCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiUserCurrent<
+  TData = Awaited<ReturnType<typeof getApiUserCurrent>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiUserCurrent>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiUserCurrent>>,
           TError,
           Awaited<ReturnType<typeof getApiUserCurrent>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiUserCurrent<TData = Awaited<ReturnType<typeof getApiUserCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiUserCurrent<
+  TData = Awaited<ReturnType<typeof getApiUserCurrent>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiUserCurrent>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 
-export function useGetApiUserCurrent<TData = Awaited<ReturnType<typeof getApiUserCurrent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUserCurrent>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiUserCurrent<
+  TData = Awaited<ReturnType<typeof getApiUserCurrent>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiUserCurrent>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetApiUserCurrentQueryOptions(options);
 
-  const queryOptions = getGetApiUserCurrentQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }

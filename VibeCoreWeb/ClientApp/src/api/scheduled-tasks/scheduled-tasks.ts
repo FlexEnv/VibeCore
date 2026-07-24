@@ -4,10 +4,7 @@
  * VibeCore API
  * OpenAPI spec version: v1
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -20,30 +17,30 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   ProblemDetails,
   SaveScheduledTaskRequest,
   ScheduledTaskDto,
   ScheduledTaskHandlerDto,
-  ScheduledTaskRunDto
-} from '../models';
+  ScheduledTaskRunDto,
+} from "../models";
 
-import { customFetch } from '.././client.ts';
-
+import { customFetch } from ".././client.ts";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-
-
-const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
+const withQueryKey = <T extends object, K>(
+  query: T,
+  queryKey: K,
+): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
     // The explicit queryKey always wins, matching the previous
     // `{ ...query, queryKey }` spread where it was set last.
-    if (key === 'queryKey') continue;
+    if (key === "queryKey") continue;
     Object.defineProperty(result, key, {
       enumerable: true,
       configurable: true,
@@ -54,1011 +51,1470 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type getApiScheduledTasksHandlersResponse200TextPlain = {
-  data: ScheduledTaskHandlerDto[]
-  status: 200
-}
+  data: ScheduledTaskHandlerDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksHandlersResponse200ApplicationJson = {
-  data: ScheduledTaskHandlerDto[]
-  status: 200
-}
+  data: ScheduledTaskHandlerDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksHandlersResponse200TextJson = {
-  data: ScheduledTaskHandlerDto[]
-  status: 200
-}
+  data: ScheduledTaskHandlerDto[];
+  status: 200;
+};
 
-export type getApiScheduledTasksHandlersResponseSuccess = (getApiScheduledTasksHandlersResponse200TextPlain | getApiScheduledTasksHandlersResponse200ApplicationJson | getApiScheduledTasksHandlersResponse200TextJson) & {
+export type getApiScheduledTasksHandlersResponseSuccess = (
+  | getApiScheduledTasksHandlersResponse200TextPlain
+  | getApiScheduledTasksHandlersResponse200ApplicationJson
+  | getApiScheduledTasksHandlersResponse200TextJson
+) & {
   headers: Headers;
 };
-;
-
-export type getApiScheduledTasksHandlersResponse = (getApiScheduledTasksHandlersResponseSuccess)
+export type getApiScheduledTasksHandlersResponse =
+  getApiScheduledTasksHandlersResponseSuccess;
 
 export const getGetApiScheduledTasksHandlersUrl = () => {
+  return `/api/scheduled-tasks/handlers`;
+};
 
-
-
-
-  return `/api/scheduled-tasks/handlers`
-}
-
-export const getApiScheduledTasksHandlers = async ( options?: RequestInit): Promise<getApiScheduledTasksHandlersResponse> => {
-
-  return customFetch<getApiScheduledTasksHandlersResponse>(getGetApiScheduledTasksHandlersUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+export const getApiScheduledTasksHandlers = async (
+  options?: RequestInit,
+): Promise<getApiScheduledTasksHandlersResponse> => {
+  return customFetch<getApiScheduledTasksHandlersResponse>(
+    getGetApiScheduledTasksHandlersUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getGetApiScheduledTasksHandlersQueryKey = () => {
-    return [
-    `/api/scheduled-tasks/handlers`
-    ] as const;
-    }
+  return [`/api/scheduled-tasks/handlers`] as const;
+};
 
+export const getGetApiScheduledTasksHandlersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getGetApiScheduledTasksHandlersQueryOptions = <TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiScheduledTasksHandlersQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>
+  > = ({ signal }) =>
+    getApiScheduledTasksHandlers({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiScheduledTasksHandlersQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type GetApiScheduledTasksHandlersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>
+>;
+export type GetApiScheduledTasksHandlersQueryError = unknown;
 
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>> = ({ signal }) => getApiScheduledTasksHandlers({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiScheduledTasksHandlersQueryResult = NonNullable<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>>
-export type GetApiScheduledTasksHandlersQueryError = unknown
-
-
-export function useGetApiScheduledTasksHandlers<TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData>> & Pick<
+export function useGetApiScheduledTasksHandlers<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksHandlers<TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksHandlers<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksHandlers<TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksHandlers<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 
-export function useGetApiScheduledTasksHandlers<TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiScheduledTasksHandlers<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksHandlers>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetApiScheduledTasksHandlersQueryOptions(options);
 
-  const queryOptions = getGetApiScheduledTasksHandlersQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
 
 export type getApiScheduledTasksSchedulesResponse200TextPlain = {
-  data: ScheduledTaskDto[]
-  status: 200
-}
+  data: ScheduledTaskDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesResponse200ApplicationJson = {
-  data: ScheduledTaskDto[]
-  status: 200
-}
+  data: ScheduledTaskDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesResponse200TextJson = {
-  data: ScheduledTaskDto[]
-  status: 200
-}
+  data: ScheduledTaskDto[];
+  status: 200;
+};
 
-export type getApiScheduledTasksSchedulesResponseSuccess = (getApiScheduledTasksSchedulesResponse200TextPlain | getApiScheduledTasksSchedulesResponse200ApplicationJson | getApiScheduledTasksSchedulesResponse200TextJson) & {
+export type getApiScheduledTasksSchedulesResponseSuccess = (
+  | getApiScheduledTasksSchedulesResponse200TextPlain
+  | getApiScheduledTasksSchedulesResponse200ApplicationJson
+  | getApiScheduledTasksSchedulesResponse200TextJson
+) & {
   headers: Headers;
 };
-;
-
-export type getApiScheduledTasksSchedulesResponse = (getApiScheduledTasksSchedulesResponseSuccess)
+export type getApiScheduledTasksSchedulesResponse =
+  getApiScheduledTasksSchedulesResponseSuccess;
 
 export const getGetApiScheduledTasksSchedulesUrl = () => {
+  return `/api/scheduled-tasks/schedules`;
+};
 
-
-
-
-  return `/api/scheduled-tasks/schedules`
-}
-
-export const getApiScheduledTasksSchedules = async ( options?: RequestInit): Promise<getApiScheduledTasksSchedulesResponse> => {
-
-  return customFetch<getApiScheduledTasksSchedulesResponse>(getGetApiScheduledTasksSchedulesUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
+export const getApiScheduledTasksSchedules = async (
+  options?: RequestInit,
+): Promise<getApiScheduledTasksSchedulesResponse> => {
+  return customFetch<getApiScheduledTasksSchedulesResponse>(
+    getGetApiScheduledTasksSchedulesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getGetApiScheduledTasksSchedulesQueryKey = () => {
-    return [
-    `/api/scheduled-tasks/schedules`
-    ] as const;
-    }
+  return [`/api/scheduled-tasks/schedules`] as const;
+};
 
+export const getGetApiScheduledTasksSchedulesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export const getGetApiScheduledTasksSchedulesQueryOptions = <TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiScheduledTasksSchedulesQueryKey();
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>
+  > = ({ signal }) =>
+    getApiScheduledTasksSchedules({ signal, ...requestOptions });
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiScheduledTasksSchedulesQueryKey();
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type GetApiScheduledTasksSchedulesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>
+>;
+export type GetApiScheduledTasksSchedulesQueryError = unknown;
 
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>> = ({ signal }) => getApiScheduledTasksSchedules({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiScheduledTasksSchedulesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>>
-export type GetApiScheduledTasksSchedulesQueryError = unknown
-
-
-export function useGetApiScheduledTasksSchedules<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData>> & Pick<
+export function useGetApiScheduledTasksSchedules<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedules<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedules<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedules<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedules<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 
-export function useGetApiScheduledTasksSchedules<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiScheduledTasksSchedules<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedules>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetApiScheduledTasksSchedulesQueryOptions(options);
 
-  const queryOptions = getGetApiScheduledTasksSchedulesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
 
 export type postApiScheduledTasksSchedulesResponse200TextPlain = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type postApiScheduledTasksSchedulesResponse200ApplicationJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type postApiScheduledTasksSchedulesResponse200TextJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
-export type postApiScheduledTasksSchedulesResponseSuccess = (postApiScheduledTasksSchedulesResponse200TextPlain | postApiScheduledTasksSchedulesResponse200ApplicationJson | postApiScheduledTasksSchedulesResponse200TextJson) & {
+export type postApiScheduledTasksSchedulesResponseSuccess = (
+  | postApiScheduledTasksSchedulesResponse200TextPlain
+  | postApiScheduledTasksSchedulesResponse200ApplicationJson
+  | postApiScheduledTasksSchedulesResponse200TextJson
+) & {
   headers: Headers;
 };
-;
-
-export type postApiScheduledTasksSchedulesResponse = (postApiScheduledTasksSchedulesResponseSuccess)
+export type postApiScheduledTasksSchedulesResponse =
+  postApiScheduledTasksSchedulesResponseSuccess;
 
 export const getPostApiScheduledTasksSchedulesUrl = () => {
+  return `/api/scheduled-tasks/schedules`;
+};
 
+export const postApiScheduledTasksSchedules = async (
+  saveScheduledTaskRequest?: SaveScheduledTaskRequest,
+  options?: RequestInit,
+): Promise<postApiScheduledTasksSchedulesResponse> => {
+  return customFetch<postApiScheduledTasksSchedulesResponse>(
+    getPostApiScheduledTasksSchedulesUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(saveScheduledTaskRequest),
+    },
+  );
+};
 
+export const getPostApiScheduledTasksSchedulesMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
+    TError,
+    { data?: SaveScheduledTaskRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
+  TError,
+  { data?: SaveScheduledTaskRequest },
+  TContext
+> => {
+  const mutationKey = ["postApiScheduledTasksSchedules"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
+    { data?: SaveScheduledTaskRequest }
+  > = (props) => {
+    const { data } = props ?? {};
 
-  return `/api/scheduled-tasks/schedules`
-}
+    return postApiScheduledTasksSchedules(data, requestOptions);
+  };
 
-export const postApiScheduledTasksSchedules = async (saveScheduledTaskRequest?: SaveScheduledTaskRequest, options?: RequestInit): Promise<postApiScheduledTasksSchedulesResponse> => {
+  return { mutationFn, ...mutationOptions };
+};
 
-  return customFetch<postApiScheduledTasksSchedulesResponse>(getPostApiScheduledTasksSchedulesUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(saveScheduledTaskRequest)
-  }
-);}
+export type PostApiScheduledTasksSchedulesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>
+>;
+export type PostApiScheduledTasksSchedulesMutationBody =
+  | SaveScheduledTaskRequest
+  | undefined;
+export type PostApiScheduledTasksSchedulesMutationError = unknown;
 
-
-
-
-
-export const getPostApiScheduledTasksSchedulesMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>, TError,{data?: SaveScheduledTaskRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>, TError,{data?: SaveScheduledTaskRequest}, TContext> => {
-
-const mutationKey = ['postApiScheduledTasksSchedules'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>, {data?: SaveScheduledTaskRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postApiScheduledTasksSchedules(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiScheduledTasksSchedulesMutationResult = NonNullable<Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>>
-    export type PostApiScheduledTasksSchedulesMutationBody = SaveScheduledTaskRequest | undefined
-    export type PostApiScheduledTasksSchedulesMutationError = unknown
-
-    export const usePostApiScheduledTasksSchedules = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>, TError,{data?: SaveScheduledTaskRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
-        TError,
-        {data?: SaveScheduledTaskRequest},
-        TContext
-      > => {
-      return useMutation(getPostApiScheduledTasksSchedulesMutationOptions(options), queryClient);
-    }
-    export type getApiScheduledTasksSchedulesIdResponse200TextPlain = {
-  data: ScheduledTaskDto
-  status: 200
-}
+export const usePostApiScheduledTasksSchedules = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
+      TError,
+      { data?: SaveScheduledTaskRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedules>>,
+  TError,
+  { data?: SaveScheduledTaskRequest },
+  TContext
+> => {
+  return useMutation(
+    getPostApiScheduledTasksSchedulesMutationOptions(options),
+    queryClient,
+  );
+};
+export type getApiScheduledTasksSchedulesIdResponse200TextPlain = {
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesIdResponse200ApplicationJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesIdResponse200TextJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
-export type getApiScheduledTasksSchedulesIdResponseSuccess = (getApiScheduledTasksSchedulesIdResponse200TextPlain | getApiScheduledTasksSchedulesIdResponse200ApplicationJson | getApiScheduledTasksSchedulesIdResponse200TextJson) & {
+export type getApiScheduledTasksSchedulesIdResponseSuccess = (
+  | getApiScheduledTasksSchedulesIdResponse200TextPlain
+  | getApiScheduledTasksSchedulesIdResponse200ApplicationJson
+  | getApiScheduledTasksSchedulesIdResponse200TextJson
+) & {
   headers: Headers;
 };
-;
+export type getApiScheduledTasksSchedulesIdResponse =
+  getApiScheduledTasksSchedulesIdResponseSuccess;
 
-export type getApiScheduledTasksSchedulesIdResponse = (getApiScheduledTasksSchedulesIdResponseSuccess)
+export const getGetApiScheduledTasksSchedulesIdUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}`;
+};
 
-export const getGetApiScheduledTasksSchedulesIdUrl = (id: string,) => {
+export const getApiScheduledTasksSchedulesId = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getApiScheduledTasksSchedulesIdResponse> => {
+  return customFetch<getApiScheduledTasksSchedulesIdResponse>(
+    getGetApiScheduledTasksSchedulesIdUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
+export const getGetApiScheduledTasksSchedulesIdQueryKey = (id: string) => {
+  return [`/api/scheduled-tasks/schedules/${id}`] as const;
+};
 
-
-
-  return `/api/scheduled-tasks/schedules/${id}`
-}
-
-export const getApiScheduledTasksSchedulesId = async (id: string, options?: RequestInit): Promise<getApiScheduledTasksSchedulesIdResponse> => {
-
-  return customFetch<getApiScheduledTasksSchedulesIdResponse>(getGetApiScheduledTasksSchedulesIdUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetApiScheduledTasksSchedulesIdQueryKey = (id: string,) => {
-    return [
-    `/api/scheduled-tasks/schedules/${id}`
-    ] as const;
-    }
-
-
-export const getGetApiScheduledTasksSchedulesIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiScheduledTasksSchedulesIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetApiScheduledTasksSchedulesIdQueryKey(id);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiScheduledTasksSchedulesIdQueryKey(id);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>
+  > = ({ signal }) =>
+    getApiScheduledTasksSchedulesId(id, { signal, ...requestOptions });
 
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type GetApiScheduledTasksSchedulesIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>
+>;
+export type GetApiScheduledTasksSchedulesIdQueryError = unknown;
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>> = ({ signal }) => getApiScheduledTasksSchedulesId(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiScheduledTasksSchedulesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>>
-export type GetApiScheduledTasksSchedulesIdQueryError = unknown
-
-
-export function useGetApiScheduledTasksSchedulesId<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData>> & Pick<
+export function useGetApiScheduledTasksSchedulesId<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedulesId<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedulesId<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedulesId<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedulesId<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 
-export function useGetApiScheduledTasksSchedulesId<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiScheduledTasksSchedulesId<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesId>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetApiScheduledTasksSchedulesIdQueryOptions(
+    id,
+    options,
+  );
 
-  const queryOptions = getGetApiScheduledTasksSchedulesIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
 
 export type putApiScheduledTasksSchedulesIdResponse200TextPlain = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type putApiScheduledTasksSchedulesIdResponse200ApplicationJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
 export type putApiScheduledTasksSchedulesIdResponse200TextJson = {
-  data: ScheduledTaskDto
-  status: 200
-}
+  data: ScheduledTaskDto;
+  status: 200;
+};
 
-export type putApiScheduledTasksSchedulesIdResponseSuccess = (putApiScheduledTasksSchedulesIdResponse200TextPlain | putApiScheduledTasksSchedulesIdResponse200ApplicationJson | putApiScheduledTasksSchedulesIdResponse200TextJson) & {
+export type putApiScheduledTasksSchedulesIdResponseSuccess = (
+  | putApiScheduledTasksSchedulesIdResponse200TextPlain
+  | putApiScheduledTasksSchedulesIdResponse200ApplicationJson
+  | putApiScheduledTasksSchedulesIdResponse200TextJson
+) & {
   headers: Headers;
 };
-;
+export type putApiScheduledTasksSchedulesIdResponse =
+  putApiScheduledTasksSchedulesIdResponseSuccess;
 
-export type putApiScheduledTasksSchedulesIdResponse = (putApiScheduledTasksSchedulesIdResponseSuccess)
+export const getPutApiScheduledTasksSchedulesIdUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}`;
+};
 
-export const getPutApiScheduledTasksSchedulesIdUrl = (id: string,) => {
+export const putApiScheduledTasksSchedulesId = async (
+  id: string,
+  saveScheduledTaskRequest?: SaveScheduledTaskRequest,
+  options?: RequestInit,
+): Promise<putApiScheduledTasksSchedulesIdResponse> => {
+  return customFetch<putApiScheduledTasksSchedulesIdResponse>(
+    getPutApiScheduledTasksSchedulesIdUrl(id),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(saveScheduledTaskRequest),
+    },
+  );
+};
 
+export const getPutApiScheduledTasksSchedulesIdMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
+    TError,
+    { id: string; data?: SaveScheduledTaskRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
+  TError,
+  { id: string; data?: SaveScheduledTaskRequest },
+  TContext
+> => {
+  const mutationKey = ["putApiScheduledTasksSchedulesId"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
+    { id: string; data?: SaveScheduledTaskRequest }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
+    return putApiScheduledTasksSchedulesId(id, data, requestOptions);
+  };
 
-  return `/api/scheduled-tasks/schedules/${id}`
-}
+  return { mutationFn, ...mutationOptions };
+};
 
-export const putApiScheduledTasksSchedulesId = async (id: string,
-    saveScheduledTaskRequest?: SaveScheduledTaskRequest, options?: RequestInit): Promise<putApiScheduledTasksSchedulesIdResponse> => {
+export type PutApiScheduledTasksSchedulesIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>
+>;
+export type PutApiScheduledTasksSchedulesIdMutationBody =
+  | SaveScheduledTaskRequest
+  | undefined;
+export type PutApiScheduledTasksSchedulesIdMutationError = unknown;
 
-  return customFetch<putApiScheduledTasksSchedulesIdResponse>(getPutApiScheduledTasksSchedulesIdUrl(id),
-  {
-    ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(saveScheduledTaskRequest)
-  }
-);}
-
-
-
-
-
-export const getPutApiScheduledTasksSchedulesIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>, TError,{id: string;data?: SaveScheduledTaskRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>, TError,{id: string;data?: SaveScheduledTaskRequest}, TContext> => {
-
-const mutationKey = ['putApiScheduledTasksSchedulesId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>, {id: string;data?: SaveScheduledTaskRequest}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putApiScheduledTasksSchedulesId(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutApiScheduledTasksSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>>
-    export type PutApiScheduledTasksSchedulesIdMutationBody = SaveScheduledTaskRequest | undefined
-    export type PutApiScheduledTasksSchedulesIdMutationError = unknown
-
-    export const usePutApiScheduledTasksSchedulesId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>, TError,{id: string;data?: SaveScheduledTaskRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
-        TError,
-        {id: string;data?: SaveScheduledTaskRequest},
-        TContext
-      > => {
-      return useMutation(getPutApiScheduledTasksSchedulesIdMutationOptions(options), queryClient);
-    }
-    export type deleteApiScheduledTasksSchedulesIdResponse204 = {
-  data: void
-  status: 204
-}
+export const usePutApiScheduledTasksSchedulesId = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
+      TError,
+      { id: string; data?: SaveScheduledTaskRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof putApiScheduledTasksSchedulesId>>,
+  TError,
+  { id: string; data?: SaveScheduledTaskRequest },
+  TContext
+> => {
+  return useMutation(
+    getPutApiScheduledTasksSchedulesIdMutationOptions(options),
+    queryClient,
+  );
+};
+export type deleteApiScheduledTasksSchedulesIdResponse204 = {
+  data: void;
+  status: 204;
+};
 
 export type deleteApiScheduledTasksSchedulesIdResponse404TextPlain = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type deleteApiScheduledTasksSchedulesIdResponse404ApplicationJson = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type deleteApiScheduledTasksSchedulesIdResponse404TextJson = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type deleteApiScheduledTasksSchedulesIdResponseSuccess = (deleteApiScheduledTasksSchedulesIdResponse204) & {
-  headers: Headers;
-};
-export type deleteApiScheduledTasksSchedulesIdResponseError = (deleteApiScheduledTasksSchedulesIdResponse404TextPlain | deleteApiScheduledTasksSchedulesIdResponse404ApplicationJson | deleteApiScheduledTasksSchedulesIdResponse404TextJson) & {
-  headers: Headers;
+  data: ProblemDetails;
+  status: 404;
 };
 
-export type deleteApiScheduledTasksSchedulesIdResponse = (deleteApiScheduledTasksSchedulesIdResponseSuccess | deleteApiScheduledTasksSchedulesIdResponseError)
+export type deleteApiScheduledTasksSchedulesIdResponseSuccess =
+  deleteApiScheduledTasksSchedulesIdResponse204 & {
+    headers: Headers;
+  };
+export type deleteApiScheduledTasksSchedulesIdResponseError = (
+  | deleteApiScheduledTasksSchedulesIdResponse404TextPlain
+  | deleteApiScheduledTasksSchedulesIdResponse404ApplicationJson
+  | deleteApiScheduledTasksSchedulesIdResponse404TextJson
+) & {
+  headers: Headers;
+};
 
-export const getDeleteApiScheduledTasksSchedulesIdUrl = (id: string,) => {
+export type deleteApiScheduledTasksSchedulesIdResponse =
+  | deleteApiScheduledTasksSchedulesIdResponseSuccess
+  | deleteApiScheduledTasksSchedulesIdResponseError;
 
+export const getDeleteApiScheduledTasksSchedulesIdUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}`;
+};
 
+export const deleteApiScheduledTasksSchedulesId = async (
+  id: string,
+  options?: RequestInit,
+): Promise<deleteApiScheduledTasksSchedulesIdResponse> => {
+  return customFetch<deleteApiScheduledTasksSchedulesIdResponse>(
+    getDeleteApiScheduledTasksSchedulesIdUrl(id),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
 
+export const getDeleteApiScheduledTasksSchedulesIdMutationOptions = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteApiScheduledTasksSchedulesId"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/scheduled-tasks/schedules/${id}`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
 
-export const deleteApiScheduledTasksSchedulesId = async (id: string, options?: RequestInit): Promise<deleteApiScheduledTasksSchedulesIdResponse> => {
+    return deleteApiScheduledTasksSchedulesId(id, requestOptions);
+  };
 
-  return customFetch<deleteApiScheduledTasksSchedulesIdResponse>(getDeleteApiScheduledTasksSchedulesIdUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteApiScheduledTasksSchedulesIdMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>
+>;
 
-  }
-);}
+export type DeleteApiScheduledTasksSchedulesIdMutationError = ProblemDetails;
 
-
-
-
-
-export const getDeleteApiScheduledTasksSchedulesIdMutationOptions = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteApiScheduledTasksSchedulesId'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteApiScheduledTasksSchedulesId(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteApiScheduledTasksSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>>
-
-    export type DeleteApiScheduledTasksSchedulesIdMutationError = ProblemDetails
-
-    export const useDeleteApiScheduledTasksSchedulesId = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getDeleteApiScheduledTasksSchedulesIdMutationOptions(options), queryClient);
-    }
-    export type postApiScheduledTasksSchedulesIdPauseResponse204 = {
-  data: void
-  status: 204
-}
+export const useDeleteApiScheduledTasksSchedulesId = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiScheduledTasksSchedulesId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteApiScheduledTasksSchedulesIdMutationOptions(options),
+    queryClient,
+  );
+};
+export type postApiScheduledTasksSchedulesIdPauseResponse204 = {
+  data: void;
+  status: 204;
+};
 
 export type postApiScheduledTasksSchedulesIdPauseResponse404TextPlain = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdPauseResponse404ApplicationJson = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdPauseResponse404TextJson = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type postApiScheduledTasksSchedulesIdPauseResponseSuccess = (postApiScheduledTasksSchedulesIdPauseResponse204) & {
-  headers: Headers;
-};
-export type postApiScheduledTasksSchedulesIdPauseResponseError = (postApiScheduledTasksSchedulesIdPauseResponse404TextPlain | postApiScheduledTasksSchedulesIdPauseResponse404ApplicationJson | postApiScheduledTasksSchedulesIdPauseResponse404TextJson) & {
-  headers: Headers;
+  data: ProblemDetails;
+  status: 404;
 };
 
-export type postApiScheduledTasksSchedulesIdPauseResponse = (postApiScheduledTasksSchedulesIdPauseResponseSuccess | postApiScheduledTasksSchedulesIdPauseResponseError)
+export type postApiScheduledTasksSchedulesIdPauseResponseSuccess =
+  postApiScheduledTasksSchedulesIdPauseResponse204 & {
+    headers: Headers;
+  };
+export type postApiScheduledTasksSchedulesIdPauseResponseError = (
+  | postApiScheduledTasksSchedulesIdPauseResponse404TextPlain
+  | postApiScheduledTasksSchedulesIdPauseResponse404ApplicationJson
+  | postApiScheduledTasksSchedulesIdPauseResponse404TextJson
+) & {
+  headers: Headers;
+};
 
-export const getPostApiScheduledTasksSchedulesIdPauseUrl = (id: string,) => {
+export type postApiScheduledTasksSchedulesIdPauseResponse =
+  | postApiScheduledTasksSchedulesIdPauseResponseSuccess
+  | postApiScheduledTasksSchedulesIdPauseResponseError;
 
+export const getPostApiScheduledTasksSchedulesIdPauseUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}/pause`;
+};
 
+export const postApiScheduledTasksSchedulesIdPause = async (
+  id: string,
+  options?: RequestInit,
+): Promise<postApiScheduledTasksSchedulesIdPauseResponse> => {
+  return customFetch<postApiScheduledTasksSchedulesIdPauseResponse>(
+    getPostApiScheduledTasksSchedulesIdPauseUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
 
+export const getPostApiScheduledTasksSchedulesIdPauseMutationOptions = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["postApiScheduledTasksSchedulesIdPause"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/scheduled-tasks/schedules/${id}/pause`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
 
-export const postApiScheduledTasksSchedulesIdPause = async (id: string, options?: RequestInit): Promise<postApiScheduledTasksSchedulesIdPauseResponse> => {
+    return postApiScheduledTasksSchedulesIdPause(id, requestOptions);
+  };
 
-  return customFetch<postApiScheduledTasksSchedulesIdPauseResponse>(getPostApiScheduledTasksSchedulesIdPauseUrl(id),
-  {
-    ...options,
-    method: 'POST'
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiScheduledTasksSchedulesIdPauseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>
+>;
 
-  }
-);}
+export type PostApiScheduledTasksSchedulesIdPauseMutationError = ProblemDetails;
 
-
-
-
-
-export const getPostApiScheduledTasksSchedulesIdPauseMutationOptions = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postApiScheduledTasksSchedulesIdPause'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postApiScheduledTasksSchedulesIdPause(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiScheduledTasksSchedulesIdPauseMutationResult = NonNullable<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>>
-
-    export type PostApiScheduledTasksSchedulesIdPauseMutationError = ProblemDetails
-
-    export const usePostApiScheduledTasksSchedulesIdPause = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getPostApiScheduledTasksSchedulesIdPauseMutationOptions(options), queryClient);
-    }
-    export type postApiScheduledTasksSchedulesIdResumeResponse204 = {
-  data: void
-  status: 204
-}
+export const usePostApiScheduledTasksSchedulesIdPause = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdPause>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(
+    getPostApiScheduledTasksSchedulesIdPauseMutationOptions(options),
+    queryClient,
+  );
+};
+export type postApiScheduledTasksSchedulesIdResumeResponse204 = {
+  data: void;
+  status: 204;
+};
 
 export type postApiScheduledTasksSchedulesIdResumeResponse404TextPlain = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdResumeResponse404ApplicationJson = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdResumeResponse404TextJson = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type postApiScheduledTasksSchedulesIdResumeResponseSuccess = (postApiScheduledTasksSchedulesIdResumeResponse204) & {
-  headers: Headers;
-};
-export type postApiScheduledTasksSchedulesIdResumeResponseError = (postApiScheduledTasksSchedulesIdResumeResponse404TextPlain | postApiScheduledTasksSchedulesIdResumeResponse404ApplicationJson | postApiScheduledTasksSchedulesIdResumeResponse404TextJson) & {
-  headers: Headers;
+  data: ProblemDetails;
+  status: 404;
 };
 
-export type postApiScheduledTasksSchedulesIdResumeResponse = (postApiScheduledTasksSchedulesIdResumeResponseSuccess | postApiScheduledTasksSchedulesIdResumeResponseError)
+export type postApiScheduledTasksSchedulesIdResumeResponseSuccess =
+  postApiScheduledTasksSchedulesIdResumeResponse204 & {
+    headers: Headers;
+  };
+export type postApiScheduledTasksSchedulesIdResumeResponseError = (
+  | postApiScheduledTasksSchedulesIdResumeResponse404TextPlain
+  | postApiScheduledTasksSchedulesIdResumeResponse404ApplicationJson
+  | postApiScheduledTasksSchedulesIdResumeResponse404TextJson
+) & {
+  headers: Headers;
+};
 
-export const getPostApiScheduledTasksSchedulesIdResumeUrl = (id: string,) => {
+export type postApiScheduledTasksSchedulesIdResumeResponse =
+  | postApiScheduledTasksSchedulesIdResumeResponseSuccess
+  | postApiScheduledTasksSchedulesIdResumeResponseError;
 
+export const getPostApiScheduledTasksSchedulesIdResumeUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}/resume`;
+};
 
+export const postApiScheduledTasksSchedulesIdResume = async (
+  id: string,
+  options?: RequestInit,
+): Promise<postApiScheduledTasksSchedulesIdResumeResponse> => {
+  return customFetch<postApiScheduledTasksSchedulesIdResumeResponse>(
+    getPostApiScheduledTasksSchedulesIdResumeUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
 
+export const getPostApiScheduledTasksSchedulesIdResumeMutationOptions = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["postApiScheduledTasksSchedulesIdResume"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/scheduled-tasks/schedules/${id}/resume`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
 
-export const postApiScheduledTasksSchedulesIdResume = async (id: string, options?: RequestInit): Promise<postApiScheduledTasksSchedulesIdResumeResponse> => {
+    return postApiScheduledTasksSchedulesIdResume(id, requestOptions);
+  };
 
-  return customFetch<postApiScheduledTasksSchedulesIdResumeResponse>(getPostApiScheduledTasksSchedulesIdResumeUrl(id),
-  {
-    ...options,
-    method: 'POST'
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiScheduledTasksSchedulesIdResumeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>
+>;
 
-  }
-);}
+export type PostApiScheduledTasksSchedulesIdResumeMutationError =
+  ProblemDetails;
 
-
-
-
-
-export const getPostApiScheduledTasksSchedulesIdResumeMutationOptions = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postApiScheduledTasksSchedulesIdResume'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postApiScheduledTasksSchedulesIdResume(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiScheduledTasksSchedulesIdResumeMutationResult = NonNullable<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>>
-
-    export type PostApiScheduledTasksSchedulesIdResumeMutationError = ProblemDetails
-
-    export const usePostApiScheduledTasksSchedulesIdResume = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getPostApiScheduledTasksSchedulesIdResumeMutationOptions(options), queryClient);
-    }
-    export type postApiScheduledTasksSchedulesIdRunResponse202 = {
-  data: void
-  status: 202
-}
+export const usePostApiScheduledTasksSchedulesIdResume = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdResume>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(
+    getPostApiScheduledTasksSchedulesIdResumeMutationOptions(options),
+    queryClient,
+  );
+};
+export type postApiScheduledTasksSchedulesIdRunResponse202 = {
+  data: void;
+  status: 202;
+};
 
 export type postApiScheduledTasksSchedulesIdRunResponse404TextPlain = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdRunResponse404ApplicationJson = {
-  data: ProblemDetails
-  status: 404
-}
+  data: ProblemDetails;
+  status: 404;
+};
 
 export type postApiScheduledTasksSchedulesIdRunResponse404TextJson = {
-  data: ProblemDetails
-  status: 404
-}
-
-export type postApiScheduledTasksSchedulesIdRunResponseSuccess = (postApiScheduledTasksSchedulesIdRunResponse202) & {
-  headers: Headers;
-};
-export type postApiScheduledTasksSchedulesIdRunResponseError = (postApiScheduledTasksSchedulesIdRunResponse404TextPlain | postApiScheduledTasksSchedulesIdRunResponse404ApplicationJson | postApiScheduledTasksSchedulesIdRunResponse404TextJson) & {
-  headers: Headers;
+  data: ProblemDetails;
+  status: 404;
 };
 
-export type postApiScheduledTasksSchedulesIdRunResponse = (postApiScheduledTasksSchedulesIdRunResponseSuccess | postApiScheduledTasksSchedulesIdRunResponseError)
+export type postApiScheduledTasksSchedulesIdRunResponseSuccess =
+  postApiScheduledTasksSchedulesIdRunResponse202 & {
+    headers: Headers;
+  };
+export type postApiScheduledTasksSchedulesIdRunResponseError = (
+  | postApiScheduledTasksSchedulesIdRunResponse404TextPlain
+  | postApiScheduledTasksSchedulesIdRunResponse404ApplicationJson
+  | postApiScheduledTasksSchedulesIdRunResponse404TextJson
+) & {
+  headers: Headers;
+};
 
-export const getPostApiScheduledTasksSchedulesIdRunUrl = (id: string,) => {
+export type postApiScheduledTasksSchedulesIdRunResponse =
+  | postApiScheduledTasksSchedulesIdRunResponseSuccess
+  | postApiScheduledTasksSchedulesIdRunResponseError;
 
+export const getPostApiScheduledTasksSchedulesIdRunUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}/run`;
+};
 
+export const postApiScheduledTasksSchedulesIdRun = async (
+  id: string,
+  options?: RequestInit,
+): Promise<postApiScheduledTasksSchedulesIdRunResponse> => {
+  return customFetch<postApiScheduledTasksSchedulesIdRunResponse>(
+    getPostApiScheduledTasksSchedulesIdRunUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
 
+export const getPostApiScheduledTasksSchedulesIdRunMutationOptions = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["postApiScheduledTasksSchedulesIdRun"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/scheduled-tasks/schedules/${id}/run`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
 
-export const postApiScheduledTasksSchedulesIdRun = async (id: string, options?: RequestInit): Promise<postApiScheduledTasksSchedulesIdRunResponse> => {
+    return postApiScheduledTasksSchedulesIdRun(id, requestOptions);
+  };
 
-  return customFetch<postApiScheduledTasksSchedulesIdRunResponse>(getPostApiScheduledTasksSchedulesIdRunUrl(id),
-  {
-    ...options,
-    method: 'POST'
+  return { mutationFn, ...mutationOptions };
+};
 
+export type PostApiScheduledTasksSchedulesIdRunMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>
+>;
 
-  }
-);}
+export type PostApiScheduledTasksSchedulesIdRunMutationError = ProblemDetails;
 
-
-
-
-
-export const getPostApiScheduledTasksSchedulesIdRunMutationOptions = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postApiScheduledTasksSchedulesIdRun'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postApiScheduledTasksSchedulesIdRun(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostApiScheduledTasksSchedulesIdRunMutationResult = NonNullable<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>>
-
-    export type PostApiScheduledTasksSchedulesIdRunMutationError = ProblemDetails
-
-    export const usePostApiScheduledTasksSchedulesIdRun = <TError = ProblemDetails,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getPostApiScheduledTasksSchedulesIdRunMutationOptions(options), queryClient);
-    }
-    export type getApiScheduledTasksSchedulesIdRunsResponse200TextPlain = {
-  data: ScheduledTaskRunDto[]
-  status: 200
-}
+export const usePostApiScheduledTasksSchedulesIdRun = <
+  TError = ProblemDetails,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiScheduledTasksSchedulesIdRun>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(
+    getPostApiScheduledTasksSchedulesIdRunMutationOptions(options),
+    queryClient,
+  );
+};
+export type getApiScheduledTasksSchedulesIdRunsResponse200TextPlain = {
+  data: ScheduledTaskRunDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesIdRunsResponse200ApplicationJson = {
-  data: ScheduledTaskRunDto[]
-  status: 200
-}
+  data: ScheduledTaskRunDto[];
+  status: 200;
+};
 
 export type getApiScheduledTasksSchedulesIdRunsResponse200TextJson = {
-  data: ScheduledTaskRunDto[]
-  status: 200
-}
+  data: ScheduledTaskRunDto[];
+  status: 200;
+};
 
-export type getApiScheduledTasksSchedulesIdRunsResponseSuccess = (getApiScheduledTasksSchedulesIdRunsResponse200TextPlain | getApiScheduledTasksSchedulesIdRunsResponse200ApplicationJson | getApiScheduledTasksSchedulesIdRunsResponse200TextJson) & {
+export type getApiScheduledTasksSchedulesIdRunsResponseSuccess = (
+  | getApiScheduledTasksSchedulesIdRunsResponse200TextPlain
+  | getApiScheduledTasksSchedulesIdRunsResponse200ApplicationJson
+  | getApiScheduledTasksSchedulesIdRunsResponse200TextJson
+) & {
   headers: Headers;
 };
-;
+export type getApiScheduledTasksSchedulesIdRunsResponse =
+  getApiScheduledTasksSchedulesIdRunsResponseSuccess;
 
-export type getApiScheduledTasksSchedulesIdRunsResponse = (getApiScheduledTasksSchedulesIdRunsResponseSuccess)
+export const getGetApiScheduledTasksSchedulesIdRunsUrl = (id: string) => {
+  return `/api/scheduled-tasks/schedules/${id}/runs`;
+};
 
-export const getGetApiScheduledTasksSchedulesIdRunsUrl = (id: string,) => {
+export const getApiScheduledTasksSchedulesIdRuns = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getApiScheduledTasksSchedulesIdRunsResponse> => {
+  return customFetch<getApiScheduledTasksSchedulesIdRunsResponse>(
+    getGetApiScheduledTasksSchedulesIdRunsUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
+export const getGetApiScheduledTasksSchedulesIdRunsQueryKey = (id: string) => {
+  return [`/api/scheduled-tasks/schedules/${id}/runs`] as const;
+};
 
-
-
-  return `/api/scheduled-tasks/schedules/${id}/runs`
-}
-
-export const getApiScheduledTasksSchedulesIdRuns = async (id: string, options?: RequestInit): Promise<getApiScheduledTasksSchedulesIdRunsResponse> => {
-
-  return customFetch<getApiScheduledTasksSchedulesIdRunsResponse>(getGetApiScheduledTasksSchedulesIdRunsUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetApiScheduledTasksSchedulesIdRunsQueryKey = (id: string,) => {
-    return [
-    `/api/scheduled-tasks/schedules/${id}/runs`
-    ] as const;
-    }
-
-
-export const getGetApiScheduledTasksSchedulesIdRunsQueryOptions = <TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetApiScheduledTasksSchedulesIdRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetApiScheduledTasksSchedulesIdRunsQueryKey(id);
 
-  const queryKey =  queryOptions?.queryKey ?? getGetApiScheduledTasksSchedulesIdRunsQueryKey(id);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>
+  > = ({ signal }) =>
+    getApiScheduledTasksSchedulesIdRuns(id, { signal, ...requestOptions });
 
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
+export type GetApiScheduledTasksSchedulesIdRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>
+>;
+export type GetApiScheduledTasksSchedulesIdRunsQueryError = unknown;
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>> = ({ signal }) => getApiScheduledTasksSchedulesIdRuns(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetApiScheduledTasksSchedulesIdRunsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>>
-export type GetApiScheduledTasksSchedulesIdRunsQueryError = unknown
-
-
-export function useGetApiScheduledTasksSchedulesIdRuns<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData>> & Pick<
+export function useGetApiScheduledTasksSchedulesIdRuns<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedulesIdRuns<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedulesIdRuns<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
           TError,
           Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetApiScheduledTasksSchedulesIdRuns<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiScheduledTasksSchedulesIdRuns<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 
-export function useGetApiScheduledTasksSchedulesIdRuns<TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetApiScheduledTasksSchedulesIdRuns<
+  TData = Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getApiScheduledTasksSchedulesIdRuns>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetApiScheduledTasksSchedulesIdRunsQueryOptions(
+    id,
+    options,
+  );
 
-  const queryOptions = getGetApiScheduledTasksSchedulesIdRunsQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-

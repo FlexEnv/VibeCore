@@ -78,12 +78,16 @@ that policy. Preview containers have no inactivity timeout, but can still be
 stopped explicitly or evicted for capacity. They are suitable for building and
 testing schedules but do not carry a continuous-availability guarantee.
 
-After changing controllers or API models, run the application and then:
+After changing controllers or API models, run a normal Debug build:
 
 ```bash
-cd VibeCoreWeb/ClientApp
-npm run update-api
+dotnet build VibeCore.sln
 ```
+
+The build generates `VibeCoreWeb/ClientApp/swagger.json` from the compiled
+assembly and then regenerates the Orval TypeScript client. Use
+`-p:BuildClientApp=false` when a backend-only build should skip Node and
+generated-client updates.
 
 ## Validation
 

@@ -4,7 +4,7 @@
  * VibeCore API
  * OpenAPI spec version: v1
  */
-import type { ScheduledTaskKind } from './scheduledTaskKind.ts';
+import type { ScheduledTaskKind } from "./scheduledTaskKind.ts";
 
 export interface SaveScheduledTaskRequest {
   /** @nullable */
