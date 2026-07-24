@@ -15,6 +15,10 @@ using Vite.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 var isPreviewMode =
     !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PREVIEW_URL"));
+var isBuildTimeOpenApiGeneration = string.Equals(
+    Environment.GetEnvironmentVariable("VIBECORE_GENERATE_OPENAPI"),
+    "true",
+    StringComparison.OrdinalIgnoreCase);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -51,7 +55,10 @@ builder.Services
         "Counts incomplete todos and writes the result to the server log.")
     .AddScoped<ScheduledTaskService>()
     .AddScoped<ScheduledTaskExecutor>();
-builder.Services.AddHostedService<QuartzSqliteSchemaInitializer>();
+if (!isBuildTimeOpenApiGeneration)
+{
+    builder.Services.AddHostedService<QuartzSqliteSchemaInitializer>();
+}
 builder.Services.AddQuartz(quartz =>
 {
     quartz.SchedulerName = "VibeCore";
@@ -73,10 +80,13 @@ builder.Services.AddQuartz(quartz =>
         }
     });
 });
-builder.Services.AddQuartzHostedService(options =>
+if (!isBuildTimeOpenApiGeneration)
 {
-    options.WaitForJobsToComplete = true;
-});
+    builder.Services.AddQuartzHostedService(options =>
+    {
+        options.WaitForJobsToComplete = true;
+    });
+}
 builder.Services.Configure<HostOptions>(options =>
     options.ShutdownTimeout = TimeSpan.FromSeconds(30));
 
@@ -211,7 +221,8 @@ builder.Services.AddViteServices(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() &&
+if (!isBuildTimeOpenApiGeneration &&
+    app.Environment.IsDevelopment() &&
     databaseProvider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
 {
     using var scope = app.Services.CreateScope();
@@ -359,11 +370,15 @@ app.MapHealthChecks(
                 registration.Tags.Contains("ready")
         })
     .AllowAnonymous();
-app.MapStaticAssets();
+if (!isBuildTimeOpenApiGeneration)
+{
+    app.MapStaticAssets();
+}
 app.MapRazorPages()
     .WithStaticAssets();
 
-if (app.Environment.IsDevelopment() || isPreviewMode)
+if (!isBuildTimeOpenApiGeneration &&
+    (app.Environment.IsDevelopment() || isPreviewMode))
 {
     app.UseViteDevelopmentServer(true);
 }

@@ -23,15 +23,16 @@ Provider" errors. Vite owns development caching and HMR invalidation.
 
 ## API changes
 
-After changing controllers or API models, run the application and then run:
+Normal Debug builds regenerate `swagger.json` and the TypeScript API client from
+the compiled application:
 
 ```bash
-cd VibeCoreWeb/ClientApp
-npm run update-api
+dotnet build VibeCore.sln
 ```
 
 Commit the updated `swagger.json` and generated TypeScript client with the API
-change.
+change. Pass `-p:BuildClientApp=false` for backend-only builds that must not
+invoke Node or update generated client artifacts.
 
 ## Scheduled tasks
 

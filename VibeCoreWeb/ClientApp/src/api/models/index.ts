@@ -5,11 +5,11 @@
  * OpenAPI spec version: v1
  */
 
-export * from './problemDetails.ts';
-export * from './saveScheduledTaskRequest.ts';
-export * from './scheduledTaskDto.ts';
-export * from './scheduledTaskHandlerDto.ts';
-export * from './scheduledTaskKind.ts';
-export * from './scheduledTaskRunDto.ts';
-export * from './todoItem.ts';
-export * from './userInfoDto.ts';
+export * from "./problemDetails.ts";
+export * from "./saveScheduledTaskRequest.ts";
+export * from "./scheduledTaskDto.ts";
+export * from "./scheduledTaskHandlerDto.ts";
+export * from "./scheduledTaskKind.ts";
+export * from "./scheduledTaskRunDto.ts";
+export * from "./todoItem.ts";
+export * from "./userInfoDto.ts";

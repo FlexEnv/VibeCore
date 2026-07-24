@@ -13,7 +13,7 @@ This project now includes a React + Vite frontend integrated with your ASP.NET C
 ### Prerequisites
 
 - .NET 10.0 SDK
-- Node.js (v18 or higher recommended)
+- Node.js 22.18 or newer
 
 ### Development Setup
 

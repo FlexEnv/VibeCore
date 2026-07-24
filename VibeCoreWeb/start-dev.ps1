@@ -37,7 +37,7 @@ Write-Host ""
 Write-Host "✨ Vite dev server will be started and stopped with this script" -ForegroundColor Cyan
 Write-Host "✨ Hot Module Replacement (HMR) is enabled" -ForegroundColor Cyan
 Write-Host "✨ React Fast Refresh is configured" -ForegroundColor Cyan
-Write-Host "✨ API watcher will auto-generate TypeScript client on changes" -ForegroundColor Cyan
+Write-Host "✨ Backend rebuilds regenerate the OpenAPI client" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "React App will be available at: https://localhost:XXXX/app" -ForegroundColor Yellow
 Write-Host ""
@@ -61,12 +61,6 @@ $dotnetProcess = Start-Process -FilePath "dotnet" -ArgumentList "watch", "run", 
 
 # Wait a bit for app to start
 Start-Sleep -Seconds 3
-
-# Start API watcher in background (will retry if app not ready yet)
-Write-Host ""
-Write-Host "Starting API watcher for TypeScript client generation..." -ForegroundColor Cyan
-Set-Location $clientAppPath
-$apiWatcherProcess = Start-Process -FilePath "npm" -ArgumentList "run", "watch-api" -PassThru
 
 Write-Host ""
 Write-Host "All services started! Press Ctrl+C to stop all servers" -ForegroundColor Green

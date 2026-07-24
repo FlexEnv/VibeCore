@@ -5,10 +5,10 @@
  * OpenAPI spec version: v1
  */
 
-export type ScheduledTaskKind = typeof ScheduledTaskKind[keyof typeof ScheduledTaskKind];
-
+export type ScheduledTaskKind =
+  (typeof ScheduledTaskKind)[keyof typeof ScheduledTaskKind];
 
 export const ScheduledTaskKind = {
-  Cron: 'Cron',
-  OneTime: 'OneTime',
+  Cron: "Cron",
+  OneTime: "OneTime",
 } as const;
