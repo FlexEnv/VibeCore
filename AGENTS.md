@@ -9,6 +9,12 @@ requirements: never mount them, expose them in navigation, or copy them
 wholesale. Adapt the smallest relevant pattern to the actual domain and delete
 placeholder names from copied snippets.
 
+The initial React screen is a transient build state. Flex may supply the
+non-secret `VITE_FLEX_APP_PLAN_SUMMARY` value so the user can recognize the
+approved plan while the first build starts. Replace that screen with the real
+product UI; do not preserve it as product navigation or treat the summary as a
+substitute for the complete build prompt.
+
 ## Flex preview contract
 
 Flex previews run this repository with:

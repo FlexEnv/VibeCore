@@ -1,12 +1,12 @@
 {
   "src/main.tsx": {
-    "file": "assets/main-uIB3zOEn.js",
+    "file": "assets/main--P71vzH2.js",
     "name": "main",
     "src": "src/main.tsx",
     "isEntry": true
   },
   "tailwind.config.css": {
-    "file": "assets/tailwind-SxL67dxx.css",
+    "file": "assets/tailwind-DvG5rCeu.css",
     "src": "tailwind.config.css",
     "isEntry": true
   }
