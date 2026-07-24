@@ -1,8 +1,8 @@
 # VibeCore
 
-VibeCore is a full-stack application template built with ASP.NET Core, React,
-Vite, Entity Framework Core, and Flex SSO. It includes a small authenticated
-todo application as a working API and UI example.
+VibeCore is a domain-free full-stack application template built with ASP.NET
+Core, React, Vite, Entity Framework Core, and Flex SSO. It provides platform
+infrastructure without imposing a sample business model on generated apps.
 
 ## Authentication
 
@@ -48,8 +48,7 @@ authority configuration.
 - Data Protection keys may be persisted in the application database.
 - Swagger/OpenAPI generates the TypeScript API client.
 - Quartz.NET runs persistent one-off and recurring server-side tasks from the
-  same SQLite or PostgreSQL database, with a React operator page at
-  `/app/scheduled-tasks`.
+  same SQLite or PostgreSQL database through a typed management API.
 
 ## Scheduled tasks
 

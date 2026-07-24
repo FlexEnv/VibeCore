@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz.Logging;
 using VibeCore.Areas.Api.Controllers;
 using VibeCore.Data;
-using VibeCore.Models;
+using VibeCore.Scheduling;
 using Xunit;
 
 namespace VibeCoreWeb.Tests;
@@ -37,7 +37,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
         using var client = CreateClient();
 
         using var pageResponse = await client.GetAsync("/app/");
-        using var apiResponse = await client.GetAsync("/api/todos");
+        using var apiResponse = await client.GetAsync("/api/user/current");
 
         Assert.Equal(HttpStatusCode.Redirect, pageResponse.StatusCode);
         Assert.StartsWith(
@@ -65,7 +65,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
         using var client = CreateClient();
         using var callbackResponse = await SignInAsync(client);
         using var userResponse = await client.GetAsync("/api/user/current");
-        using var todosResponse = await client.GetAsync("/api/todos");
+        using var handlersResponse = await client.GetAsync("/api/scheduled-tasks/handlers");
         var user = await userResponse.Content.ReadFromJsonAsync<UserInfoDto>();
 
         Assert.Equal(HttpStatusCode.Redirect, callbackResponse.StatusCode);
@@ -79,11 +79,11 @@ public sealed class FlexSsoIntegrationTests : IDisposable
         Assert.Equal("tenant-123", user.TenantId);
         Assert.Equal("Product", user.TenantRole);
         Assert.Contains("Reader", user.Roles);
-        Assert.Equal(HttpStatusCode.OK, todosResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, handlersResponse.StatusCode);
     }
 
     [Fact]
-    public async Task Authenticated_user_can_complete_todo_crud()
+    public async Task Authenticated_user_can_open_domain_free_app()
     {
         using var client = CreateClient();
         using var callbackResponse = await SignInAsync(client);
@@ -93,35 +93,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             html,
             "<meta name=\"csrf-token\" content=\"([^\"]+)\"").Groups[1].Value;
         Assert.NotEmpty(antiforgeryToken);
-
-        using var createRequest = new HttpRequestMessage(HttpMethod.Post, "/api/todos")
-        {
-            Content = JsonContent.Create(new TodoItem { Title = "Test SSO todo" }),
-        };
-        createRequest.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
-        using var createResponse = await client.SendAsync(createRequest);
-        var created = await createResponse.Content.ReadFromJsonAsync<TodoItem>();
-
-        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.NotNull(created);
-
-        using var completeRequest = new HttpRequestMessage(
-            HttpMethod.Patch,
-            $"/api/todos/{created.Id}/complete");
-        completeRequest.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
-        using var completeResponse = await client.SendAsync(completeRequest);
-        Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
-
-        using var deleteRequest = new HttpRequestMessage(
-            HttpMethod.Delete,
-            $"/api/todos/{created.Id}");
-        deleteRequest.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
-        using var deleteResponse = await client.SendAsync(deleteRequest);
-        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
-
-        using var listResponse = await client.GetAsync("/api/todos");
-        var todos = await listResponse.Content.ReadFromJsonAsync<TodoItem[]>();
-        Assert.Empty(Assert.IsType<TodoItem[]>(todos));
+        Assert.Equal(HttpStatusCode.OK, appResponse.StatusCode);
     }
 
     [Fact]
@@ -135,7 +107,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
         var handlers = await handlersResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(HttpStatusCode.OK, handlersResponse.StatusCode);
         Assert.Contains(handlers.EnumerateArray(), handler =>
-            handler.GetProperty("key").GetString() == "todo-summary");
+            handler.GetProperty("key").GetString() == "integration-task");
 
         using var createRequest = CreateScheduleRequest(antiforgeryToken);
         using var createResponse = await client.SendAsync(createRequest);
@@ -204,7 +176,8 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             .Where(table => table is not null)
             .ToArray();
 
-        Assert.Contains("Todos", tables);
+        Assert.DoesNotContain("Todos", tables);
+        Assert.Contains("ScheduledTaskRuns", tables);
         Assert.Contains("DataProtectionKeys", tables);
         Assert.DoesNotContain(tables, table => table!.StartsWith("AspNet", StringComparison.Ordinal));
     }
@@ -262,7 +235,7 @@ public sealed class FlexSsoIntegrationTests : IDisposable
             {
                 name = "Integration schedule",
                 description = "Runs the harmless example handler.",
-                handlerKey = "todo-summary",
+                handlerKey = "integration-task",
                 kind = "OneTime",
                 runAt = DateTimeOffset.UtcNow.AddHours(1),
             }),
@@ -290,11 +263,22 @@ public sealed class FlexSsoIntegrationTests : IDisposable
                 }));
             builder.ConfigureServices(services =>
             {
+                services.AddScheduledTask<TestScheduledTask>(
+                    "integration-task",
+                    "Integration task",
+                    "A harmless handler registered only by integration tests.");
                 services.RemoveAll<IHttpClientFactory>();
                 services.AddSingleton<IHttpClientFactory>(
                     new StubHttpClientFactory(() => Roles));
             });
         }
+    }
+
+    private sealed class TestScheduledTask : IScheduledTaskHandler
+    {
+        public Task ExecuteAsync(
+            ScheduledTaskExecutionContext context,
+            CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
     private sealed class StubHttpClientFactory(Func<string[]> getRoles) : IHttpClientFactory

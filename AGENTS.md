@@ -1,5 +1,14 @@
 # VibeCore agent notes
 
+## Reference recipes
+
+The application starts domain-free. Before implementing a requested capability,
+consult `examples/agent-recipes/README.md` and open only recipes that directly
+match the requested product. Recipes are reference material, not current
+requirements: never mount them, expose them in navigation, or copy them
+wholesale. Adapt the smallest relevant pattern to the actual domain and delete
+placeholder names from copied snippets.
+
 ## Flex preview contract
 
 Flex previews run this repository with:

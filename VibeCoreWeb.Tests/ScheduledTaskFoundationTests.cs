@@ -8,6 +8,16 @@ namespace VibeCoreWeb.Tests;
 public sealed class ScheduledTaskFoundationTests
 {
     [Fact]
+    public void Empty_registry_is_available_without_a_sample_handler()
+    {
+        var services = new ServiceCollection();
+        services.AddScheduledTasks();
+        using var provider = services.BuildServiceProvider();
+
+        Assert.Empty(provider.GetRequiredService<IScheduledTaskRegistry>().Handlers);
+    }
+
+    [Fact]
     public void Registry_rejects_duplicate_and_invalid_keys()
     {
         var services = new ServiceCollection();

@@ -61,6 +61,20 @@ public sealed class ScheduledTaskRegistry : IScheduledTaskRegistry
 
 public static class ScheduledTaskServiceCollectionExtensions
 {
+    public static IServiceCollection AddScheduledTasks(this IServiceCollection services)
+    {
+        var registry = services.FirstOrDefault(service =>
+                service.ServiceType == typeof(ScheduledTaskRegistry))
+            ?.ImplementationInstance as ScheduledTaskRegistry;
+        if (registry is not null)
+            return services;
+
+        registry = new ScheduledTaskRegistry();
+        services.AddSingleton(registry);
+        services.AddSingleton<IScheduledTaskRegistry>(registry);
+        return services;
+    }
+
     public static IServiceCollection AddScheduledTask<THandler>(
         this IServiceCollection services,
         string key,
@@ -73,15 +87,11 @@ public static class ScheduledTaskServiceCollectionExtensions
         if (handlerOptions.RetryDelays?.Any(delay => delay <= TimeSpan.Zero) == true)
             throw new InvalidOperationException("Scheduled task retry delays must be positive.");
 
-        var registry = services.FirstOrDefault(service =>
+        services.AddScheduledTasks();
+        var registry = services.First(service =>
                 service.ServiceType == typeof(ScheduledTaskRegistry))
-            ?.ImplementationInstance as ScheduledTaskRegistry;
-        if (registry is null)
-        {
-            registry = new ScheduledTaskRegistry();
-            services.AddSingleton(registry);
-            services.AddSingleton<IScheduledTaskRegistry>(registry);
-        }
+            .ImplementationInstance as ScheduledTaskRegistry
+            ?? throw new InvalidOperationException("Scheduled task registry was not initialized.");
 
         registry.Add(new ScheduledTaskDescriptor(
             key,

@@ -26,21 +26,6 @@ namespace VibeCoreWeb.Data.Migrations
                     table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Todos",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Todos", x => x.Id);
-                });
         }
 
         /// <inheritdoc />
@@ -48,9 +33,6 @@ namespace VibeCoreWeb.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "DataProtectionKeys");
-
-            migrationBuilder.DropTable(
-                name: "Todos");
         }
     }
 }

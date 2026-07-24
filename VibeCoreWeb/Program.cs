@@ -49,10 +49,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services
-    .AddScheduledTask<TodoSummaryTask>(
-        "todo-summary",
-        "Todo summary",
-        "Counts incomplete todos and writes the result to the server log.")
+    .AddScheduledTasks()
     .AddScoped<ScheduledTaskService>()
     .AddScoped<ScheduledTaskExecutor>();
 if (!isBuildTimeOpenApiGeneration)
@@ -196,7 +193,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "VibeCore API", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "Flex App API", Version = "v1" });
 });
 
 var viteServerPort = int.TryParse(
@@ -236,7 +233,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "VibeCore API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Flex App API v1");
     });
 }
 else
