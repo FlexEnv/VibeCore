@@ -24,6 +24,7 @@ const hmrClientPort = configuredClientPort || undefined;
 
 export default defineConfig({
   appType: "custom",
+  cacheDir: process.env.VIBECORE_VITE_CACHE_DIR ?? "node_modules/.vite",
   plugins: [tailwindcss(), react()],
   server: {
     origin: previewUrl?.origin,
