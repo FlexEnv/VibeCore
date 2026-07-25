@@ -30,6 +30,14 @@ Keep `.flexenv/app.json`, the preview script, and the actual application command
 in sync. The ASP.NET process is the only externally routed process. Vite listens
 internally on port 5173 and is proxied by Vite.AspNetCore.
 
+When a temporary smoke-test preview was started with
+`./scripts/flex-preview.sh`, stop that exact instance with
+`./scripts/flex-preview.sh stop`. Never use `pkill`, `pkill -f`, `killall`, or a
+process-name search to clean up preview processes. Agent prompts and command
+lines contain preview command names, so name-based matching can terminate the
+coding agent itself. If another background command is started, retain `$!` and
+terminate only that PID.
+
 Keep Vite development module URLs canonical. Do not append cache-busting query
 strings to `/app/@vite/client`, `/app/@react-refresh`, or the Vite entry module.
 Vite can propagate an entry query through only part of the import graph, loading
